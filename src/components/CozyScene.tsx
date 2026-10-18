@@ -1,12 +1,16 @@
 import { Cat } from './Cat'
 
-// Kleine Wohnzimmer-Szene als Kopf des Heute-Tabs. Die Farben folgen der Tageszeit.
+// Flache Landschafts-Szene als Kopf des Heute-Tabs: Hügel, Bäume, ein Häuschen mit
+// warmem Licht und die Katze davor. Himmel und Licht folgen der Tageszeit.
 
 function palette(hour: number) {
-  if (hour >= 6 && hour < 11) return { sky: '#f9d9a6', sun: '#fff3c4', wall: '#f3e2c7', glow: 0.25 }
-  if (hour >= 11 && hour < 17) return { sky: '#f6e6c0', sun: '#fff8d6', wall: '#f5e8d2', glow: 0.1 }
-  if (hour >= 17 && hour < 21) return { sky: '#f2b98a', sun: '#ffd49a', wall: '#ecd3b3', glow: 0.45 }
-  return { sky: '#3b3557', sun: '#f5e7b8', wall: '#4a4062', glow: 0.7 }
+  if (hour >= 6 && hour < 11)
+    return { skyTop: '#bcd7d3', skyBottom: '#f6e3c2', sun: '#fff1c9', hillFar: '#b6cdb9', hillNear: '#8fae8b', window: '#f6d58c', night: false }
+  if (hour >= 11 && hour < 17)
+    return { skyTop: '#a9d0d6', skyBottom: '#f3e6c8', sun: '#fff7d6', hillFar: '#a9c6b0', hillNear: '#7f9d74', window: '#f2cf7e', night: false }
+  if (hour >= 17 && hour < 21)
+    return { skyTop: '#c9b6c4', skyBottom: '#f5cfa0', sun: '#ffd49a', hillFar: '#b59c94', hillNear: '#8b7a62', window: '#ffc86b', night: false }
+  return { skyTop: '#3d4a63', skyBottom: '#6b6a7e', sun: '#f5e7b8', hillFar: '#4b5a6a', hillNear: '#37445a', window: '#ffd27a', night: true }
 }
 
 export function CozyScene({
@@ -17,48 +21,78 @@ export function CozyScene({
   mood?: 'happy' | 'calm'
 }) {
   const p = palette(hour)
-  const night = hour >= 21 || hour < 6
+  const id = `sky-${hour}`
 
   return (
     <svg
-      viewBox="0 0 360 130"
+      viewBox="0 0 360 170"
       role="img"
-      aria-label="Gemütliches Wohnzimmer"
-      style={{ width: '100%', height: 'auto', display: 'block' }}
+      aria-label="Ein kleines Haus in der Landschaft mit einer Katze davor"
+      style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 22 }}
     >
-      {/* Wand */}
-      <rect x="0" y="0" width="360" height="130" rx="18" fill={p.wall} />
-      {/* Fenster */}
-      <rect x="36" y="18" width="88" height="76" rx="44" fill={p.sky} stroke="#b08a5e" strokeWidth="5" />
-      <line x1="80" y1="18" x2="80" y2="94" stroke="#b08a5e" strokeWidth="4" />
-      <line x1="36" y1="56" x2="124" y2="56" stroke="#b08a5e" strokeWidth="4" />
-      {night ? (
-        <>
-          <circle cx="104" cy="36" r="9" fill="#fff8d6" />
-          <circle cx="60" cy="40" r="1.6" fill="#fff" />
-          <circle cx="96" cy="72" r="1.4" fill="#fff" />
-          <circle cx="66" cy="78" r="1.2" fill="#fff" />
-        </>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={p.skyTop} />
+          <stop offset="100%" stopColor={p.skyBottom} />
+        </linearGradient>
+      </defs>
+
+      {/* Himmel */}
+      <rect x="0" y="0" width="360" height="170" rx="22" fill={`url(#${id})`} />
+
+      {/* Sonne oder Mond */}
+      {p.night ? (
+        <circle cx="300" cy="36" r="13" fill={p.sun} />
       ) : (
-        <circle cx="104" cy="34" r="10" fill={p.sun} />
+        <circle cx="300" cy="40" r="16" fill={p.sun} />
       )}
-      {/* Lampe mit Lichtschein */}
-      <ellipse cx="282" cy="62" rx="70" ry="54" fill="#ffd98a" opacity={p.glow} />
-      <path d="M262 26 L302 26 L296 46 L268 46 Z" fill="#c4703f" />
-      <line x1="282" y1="46" x2="282" y2="78" stroke="#8d7459" strokeWidth="3" />
-      <ellipse cx="282" cy="80" rx="14" ry="4" fill="#8d7459" />
-      {/* Regal mit Pflanze */}
-      <rect x="150" y="84" width="60" height="6" rx="3" fill="#b08a5e" />
-      <path d="M160 90 L200 90 L196 110 L164 110 Z" fill="#c4703f" />
-      <path d="M180 88 C170 70 158 66 152 54 C168 56 180 66 180 88 Z" fill="#8c9a63" />
-      <path d="M180 88 C188 68 200 62 210 56 C206 72 194 84 180 88 Z" fill="#5d6b3d" />
-      <path d="M180 88 C180 76 176 62 174 48 C186 58 186 74 180 88 Z" fill="#8c9a63" />
-      {/* Teppich */}
-      <ellipse cx="180" cy="122" rx="120" ry="8" fill="#e2c69f" opacity="0.7" />
-      {/* Kerze auf dem Tisch */}
-      <rect x="22" y="104" width="14" height="18" rx="3" fill="#fffaf2" />
-      <path d="M29 96 C26 100 27 103 29 103 C31 103 32 100 29 96 Z" fill="#f2a04f" />
-      <Cat x={318} y={100} happy={mood === 'happy'} />
+      {p.night && (
+        <>
+          <circle cx="60" cy="28" r="1.6" fill="#fff" />
+          <circle cx="130" cy="18" r="1.2" fill="#fff" />
+          <circle cx="200" cy="30" r="1.4" fill="#fff" />
+        </>
+      )}
+
+      {/* Ferne Hügel */}
+      <path d="M0 110 C 60 80, 120 96, 180 84 C 240 72, 300 96, 360 82 L360 170 L0 170 Z" fill={p.hillFar} />
+
+      {/* Bäume hinten */}
+      <g fill={p.hillNear} opacity="0.85">
+        <path d="M262 96 L274 62 L286 96 Z" />
+        <path d="M278 100 L292 68 L306 100 Z" />
+        <path d="M24 92 L34 66 L44 92 Z" />
+      </g>
+
+      {/* Nahe Hügel */}
+      <path d="M0 128 C 70 104, 150 124, 220 116 C 280 110, 330 122, 360 116 L360 170 L0 170 Z" fill={p.hillNear} />
+
+      {/* Haus */}
+      <g>
+        <rect x="112" y="92" width="62" height="48" rx="4" fill="#f7ead2" />
+        <path d="M104 96 L143 66 L182 96 Z" fill="#c4703f" />
+        <rect x="136" y="110" width="14" height="30" rx="3" fill="#8d6a4a" />
+        <rect x="156" y="104" width="12" height="12" rx="2" fill={p.window} />
+        <rect x="120" y="104" width="12" height="12" rx="2" fill={p.window} />
+        {/* Schornstein mit Rauch */}
+        <rect x="150" y="70" width="8" height="16" fill="#a25f3a" />
+        <circle cx="154" cy="64" r="3" fill="#f7ead2" opacity="0.8" />
+        <circle cx="158" cy="56" r="2.2" fill="#f7ead2" opacity="0.6" />
+      </g>
+
+      {/* Weg zur Tür */}
+      <path d="M140 140 L132 170 L160 170 L150 140 Z" fill="#e2c69f" opacity="0.8" />
+
+      {/* Bäume vorn */}
+      <g>
+        <rect x="46" y="118" width="5" height="20" fill="#7a5a3a" />
+        <circle cx="48" cy="110" r="14" fill="#8c9a63" />
+        <rect x="200" y="122" width="4" height="16" fill="#7a5a3a" />
+        <circle cx="202" cy="116" r="11" fill="#6f7f4f" />
+      </g>
+
+      {/* Katze auf dem Weg */}
+      <Cat x={246} y={140} happy={mood === 'happy'} />
     </svg>
   )
 }
