@@ -3,12 +3,13 @@
 // Aufruf (im Projektordner):
 //   node scripts/encrypt-data.mjs "C:\Users\zellm\Downloads\fuel-flow-export\daten"
 //
-// Das Passwort wird verdeckt abgefragt. Es wird nirgends gespeichert.
+// Das Passwort wird im Terminal abgefragt (sichtbar) und nirgends gespeichert.
 // Ergebnis: public/data/daten.enc.json (wird ins Repo committet, ist verschlüsselt).
 // Die Klartext-Dateien bleiben bei dir.
 
 import { createCipheriv, pbkdf2Sync, randomBytes } from 'node:crypto'
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { createInterface } from 'node:readline'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -24,35 +25,17 @@ function readJson(name) {
   return JSON.parse(readFileSync(join(dataDir, name), 'utf8'))
 }
 
-// Liest das Passwort ohne Anzeige
-function askHidden(question) {
-  return new Promise((resolve) => {
-    process.stdout.write(question)
-    const stdin = process.stdin
-    stdin.setRawMode?.(true)
-    stdin.resume()
-    stdin.setEncoding('utf8')
-    let value = ''
-    const onData = (ch) => {
-      if (ch === '\r' || ch === '\n') {
-        stdin.setRawMode?.(false)
-        stdin.removeListener('data', onData)
-        process.stdout.write('\n')
-        resolve(value)
-      } else if (ch === '\u0003') {
-        process.exit(1)
-      } else if (ch === '\u007f' || ch === '\b') {
-        value = value.slice(0, -1)
-      } else {
-        value += ch
-      }
-    }
-    stdin.on('data', onData)
-  })
+// Liest eine Eingabe aus dem Terminal. Die Zeichen sind sichtbar, damit die Eingabe
+// in jedem Terminal funktioniert.
+async function ask(question) {
+  const rl = createInterface({ input: process.stdin, output: process.stdout })
+  const answer = await new Promise((resolve) => rl.question(question, resolve))
+  rl.close()
+  return answer
 }
 
-const passphrase = await askHidden('Passwort: ')
-const confirm = await askHidden('Passwort wiederholen: ')
+const passphrase = await ask('Passwort (mind. 12 Zeichen): ')
+const confirm = await ask('Passwort wiederholen: ')
 if (passphrase !== confirm || passphrase.length < 12) {
   console.error('Passwörter stimmen nicht überein oder sind kürzer als 12 Zeichen.')
   process.exit(1)
