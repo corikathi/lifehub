@@ -5,6 +5,7 @@ import { useKv } from '../lib/store'
 import { defaultSlot, findRecipe, type RezepteFile, type TrainingFile } from '../lib/content'
 import { addDays, dateKey, formatDay, greeting, streakOf } from '../lib/dates'
 import { CozyScene } from '../components/CozyScene'
+import { Abendplan } from '../components/Abendplan'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'more'
 
@@ -140,6 +141,8 @@ export function Today({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
         <input className="input" placeholder="Neue Gewohnheit…" value={newHabit} onChange={(e) => setNewHabit(e.target.value)} />
         <button className="btn primary" type="submit">+</button>
       </form>
+
+      <Abendplan />
 
       <div className="section-title">Heute</div>
       <div className="card">

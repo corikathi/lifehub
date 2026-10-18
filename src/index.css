@@ -783,3 +783,34 @@ textarea {
     animation: none;
   }
 }
+
+/* ---------- Heißhunger & Abendplan ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  min-height: 36px;
+}
+
+.chip.active {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: #fff;
+}
+
+.pause-panel {
+  margin-top: 10px;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 12px;
+}

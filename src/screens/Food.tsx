@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useKv } from '../lib/store'
+import { Hunger } from './Hunger'
 import { addDays, dateKey, formatDay, weekDays } from '../lib/dates'
 import {
   DAYS,
@@ -53,7 +54,7 @@ export function Food() {
   const [checked, setChecked] = useKv<Record<string, boolean>>('shoppingChecked', {})
   const [weekStart, setWeekStart] = useState(() => mondayOf(today))
   const [openDay, setOpenDay] = useState<number | null>(null)
-  const [view, setView] = useState<'plan' | 'shopping'>('plan')
+  const [view, setView] = useState<'plan' | 'shopping' | 'hunger'>('plan')
 
   const days = weekDays(weekStart)
   const skipped = meals.skip[weekStart] ?? []
@@ -150,7 +151,10 @@ export function Food() {
       <div className="segmented" role="tablist">
         <button type="button" className={view === 'plan' ? 'active' : ''} onClick={() => setView('plan')}>Wochenplan</button>
         <button type="button" className={view === 'shopping' ? 'active' : ''} onClick={() => setView('shopping')}>Einkaufszettel</button>
+        <button type="button" className={view === 'hunger' ? 'active' : ''} onClick={() => setView('hunger')}>Heißhunger</button>
       </div>
+
+      {view === 'hunger' && <Hunger />}
 
       {view === 'plan' && (
         <>
