@@ -197,9 +197,8 @@ export function Food() {
                       </>
                     )}
 
-                    <details>
-                      <summary className="muted">Gericht ändern</summary>
-                      <div className="form" style={{ marginTop: 8 }}>
+                    <div className="form day-actions">
+                      <p className="section-title" style={{ margin: 0 }}>Tauschen oder ändern</p>
                         <select className="select" value={recipe ? slot : ''} onChange={(e) => e.target.value && setSlot(i, e.target.value)}>
                           <option value="" disabled>Anderes Rezept wählen…</option>
                           {content.rezepte.map((r) => (
@@ -211,7 +210,7 @@ export function Food() {
                           if (e.target.value !== '') swapDays(i, Number(e.target.value))
                           e.target.value = ''
                         }}>
-                          <option value="">Tag tauschen mit…</option>
+                          <option value="">Mit anderem Tag tauschen…</option>
                           {DAYS.map((label, j) => (j !== i ? <option key={label} value={j}>{label}</option> : null))}
                         </select>
                         <button type="button" className="btn small" onClick={() => toggleSkip(i)}>
@@ -220,8 +219,7 @@ export function Food() {
                         <button type="button" className="btn ghost small" onClick={() => setSlot(i, defaultSlot(weekStart, i))}>
                           Zurück zum Standard
                         </button>
-                      </div>
-                    </details>
+                    </div>
                   </div>
                 )}
               </div>
