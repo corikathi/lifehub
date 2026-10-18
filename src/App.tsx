@@ -1,8 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import { Today } from './screens/Today'
 import { Calendar } from './screens/Calendar'
 import { Food } from './screens/Food'
 import { Training } from './screens/Training'
+import { More } from './screens/More'
+import { Login } from './screens/Login'
+import { supabase } from './lib/supabase'
+import { startSync, syncOnLogin } from './lib/sync'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'more'
 
@@ -16,6 +21,31 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 
 function App() {
   const [tab, setTab] = useState<Tab>('today')
+  // undefined = noch am Prüfen, null = abgemeldet
+  const [session, setSession] = useState<Session | null | undefined>(undefined)
+
+  useEffect(() => {
+    startSync()
+    const { data } = supabase.auth.onAuthStateChange((event, next) => {
+      setSession(next)
+      if (next && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
+        void syncOnLogin(next.user.id)
+      }
+    })
+    return () => data.subscription.unsubscribe()
+  }, [])
+
+  if (session === undefined) {
+    return (
+      <div className="app">
+        <main className="screen" style={{ display: 'grid', placeItems: 'center' }}>
+          <p className="muted">Lade…</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (session === null) return <Login />
 
   return (
     <div className="app">
@@ -24,14 +54,7 @@ function App() {
         {tab === 'calendar' && <Calendar />}
         {tab === 'food' && <Food />}
         {tab === 'training' && <Training />}
-        {tab === 'more' && (
-          <section className="stack">
-            <h1 className="title">Mehr</h1>
-            <div className="card">
-              <p className="muted">Hier kommen bald Stimmung, Journal, Ziele und Wochenrückblick hin.</p>
-            </div>
-          </section>
-        )}
+        {tab === 'more' && <More email={session.user.email} />}
       </main>
 
       <nav className="tabbar" aria-label="Hauptnavigation">

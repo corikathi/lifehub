@@ -443,6 +443,42 @@ textarea {
   color: var(--terra);
 }
 
+/* ---------- Login ---------- */
+
+.login {
+  display: flex;
+  align-items: center;
+  min-height: 100svh;
+}
+
+.login-card {
+  width: 100%;
+  text-align: center;
+  padding: 28px 20px;
+}
+
+.login-card .form {
+  text-align: left;
+}
+
+.login-icon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.error {
+  color: #b5533c;
+  font-size: 14px;
+  margin: 0;
+}
+
+.info {
+  color: var(--sage-deep);
+  font-size: 14px;
+  margin: 0;
+}
+
 /* ---------- Tab bar ---------- */
 
 .tabbar {
