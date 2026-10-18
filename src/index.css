@@ -1,19 +1,20 @@
 /* Warm & häuslich: Kerzenlicht-Creme, Holzbraun, Olivgrün und Terrakotta */
 :root {
-  --bg: #cfdfdc;
-  --surface: #f2f8f6;
-  --surface-2: #dcebe7;
+  --bg: #f4ead8;
+  --surface: #fffaf0;
+  --surface-2: #f0e3cd;
   --font-body: 'Nunito', system-ui, 'Segoe UI', sans-serif;
-  --font-head: 'Fraunces', Georgia, serif;
-  --text: #1f3b38;
-  --text-soft: #5d7b76;
-  --border: #bdd3ce;
-  --sage: #6fa597;
-  --sage-deep: #2d6a5e;
-  --sage-soft: #d5eae4;
-  --terra: #e5835f;
-  --terra-soft: #f9dcCf;
-  --wood: #7f9f98;
+  --font-head: 'Fredoka', system-ui, sans-serif;
+  --text: #4a3828;
+  --text-soft: #8d7459;
+  --border: #e6d4b8;
+  --sage: #8c9a63;
+  --sage-deep: #5d6b3d;
+  --sage-soft: #e7e9cf;
+  --gold: #e8b04a;
+  --terra: #c4703f;
+  --terra-soft: #f6dcc3;
+  --wood: #b08a5e;
   --shadow: 0 8px 22px rgba(94, 60, 25, 0.13);
   --radius: 22px;
 
@@ -33,8 +34,7 @@
 body {
   margin: 0;
   background:
-    radial-gradient(ellipse at 50% -5%, #e2eeeb 0%, transparent 55%),
-    linear-gradient(180deg, #d3e3e0 0%, #bfd4d0 100%);
+    linear-gradient(180deg, #f4ead8 0%, #ebdcc2 100%);
   min-height: 100svh;
   overscroll-behavior-y: none;
 }
@@ -717,8 +717,8 @@ textarea {
   width: 100%;
   max-width: 560px;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  background: rgba(238, 246, 243, 0.96);
+  grid-template-columns: repeat(6, 1fr);
+  background: rgba(255, 250, 240, 0.96);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
   padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
@@ -813,4 +813,63 @@ textarea {
   background: var(--surface);
   border-radius: 16px;
   padding: 12px;
+}
+
+/* ---------- Zimmer, SOS und Geld ---------- */
+
+.sos-btn {
+  width: 100%;
+  border: none;
+  border-radius: 18px;
+  padding: 14px;
+  background: var(--terra-soft);
+  color: #7a4a2e;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  min-height: 52px;
+}
+
+.breath-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.breath-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fff6e0, var(--gold));
+  animation: breathe 10s ease-in-out infinite;
+}
+
+.breath-text {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(0.6);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breath-circle {
+    animation: none;
+  }
+}
+
+.big-number {
+  font-family: var(--font-head);
+  font-size: 34px;
+  font-weight: 600;
+  margin: 4px 0 0;
 }

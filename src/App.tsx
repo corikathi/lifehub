@@ -12,15 +12,18 @@ import { startSync, syncOnLogin } from './lib/sync'
 import { Unlock } from './screens/Unlock'
 import { db } from './db'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { BowlIcon, CalendarIcon, DumbbellIcon, HomeIcon, PotIcon } from './components/Icons'
+import { BowlIcon, CalendarIcon, CoinIcon, DumbbellIcon, HomeIcon, PotIcon } from './components/Icons'
+import { Geld } from './screens/Geld'
+import { Sos } from './screens/Sos'
 
-type Tab = 'today' | 'calendar' | 'food' | 'training' | 'more'
+type Tab = 'today' | 'calendar' | 'food' | 'training' | 'money' | 'more'
 
 const TABS: { id: Tab; label: string; Icon: ComponentType<{ size?: number }> }[] = [
   { id: 'today', label: 'Heute', Icon: HomeIcon },
   { id: 'calendar', label: 'Kalender', Icon: CalendarIcon },
   { id: 'food', label: 'Essen', Icon: BowlIcon },
   { id: 'training', label: 'Training', Icon: DumbbellIcon },
+  { id: 'money', label: 'Geld', Icon: CoinIcon },
   { id: 'more', label: 'Mehr', Icon: PotIcon },
 ]
 
@@ -29,6 +32,7 @@ function App() {
   // undefined = noch am Prüfen, null = abgemeldet
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [skipUnlock, setSkipUnlock] = useState(false)
+  const [sosOpen, setSosOpen] = useState(false)
   // undefined = noch am Laden, false = Daten fehlen noch
   const bundleLoaded = useLiveQuery(async () => !!(await db.kv.get('bundle.v1')), [], undefined)
 
@@ -62,10 +66,12 @@ function App() {
   return (
     <div className="app">
       <main className="screen">
-        {tab === 'today' && <Today onNavigate={setTab} />}
+        {sosOpen && <Sos onClose={() => setSosOpen(false)} />}
+        {!sosOpen && tab === 'today' && <Today onNavigate={setTab} onOpenSos={() => setSosOpen(true)} />}
         {tab === 'calendar' && <Calendar />}
         {tab === 'food' && <Food />}
         {tab === 'training' && <Training />}
+        {tab === 'money' && <Geld />}
         {tab === 'more' && <More email={session.user.email} />}
       </main>
 

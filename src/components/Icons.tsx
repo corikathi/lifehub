@@ -77,3 +77,14 @@ export function PotIcon({ size = 24 }: IconProps) {
     </svg>
   )
 }
+
+// Münze mit Eurozeichen-Linie: Geld
+export function CoinIcon({ size = 24 }: IconProps) {
+  return (
+    <svg {...base(size)}>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.6 0-2.5.8-2.5 2s.9 1.7 2.5 2c1.6.3 2.5.8 2.5 2s-.9 2-2.5 2c-1.2 0-2.1-.5-2.6-1.3" />
+      <path d="M12 6.5V8m0 8v1.5" />
+    </svg>
+  )
+}

@@ -27,7 +27,7 @@ function stageFor(xp: number) {
   return { current, next, progress }
 }
 
-export function Today({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
+export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => void; onOpenSos: () => void }) {
   const [today] = useState(() => dateKey())
   const [newHabit, setNewHabit] = useState('')
 
@@ -84,7 +84,8 @@ export function Today({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
 
   return (
     <section className="stack">
-      <CozyScene mood={habits.length > 0 && doneCount >= Math.ceil(habits.length / 2) ? 'happy' : 'calm'} />
+      <CozyScene level={Math.min(4, Math.floor((xp ?? 0) / 100))} mood={habits.length > 0 && doneCount >= Math.ceil(habits.length / 2) ? 'happy' : 'calm'} />
+      <button type="button" className="sos-btn" onClick={onOpenSos}>Hilfe bei Panik oder Heißhunger</button>
       <header>
         <p className="subtitle">{formatDay(today)}</p>
         <h1 className="title">{greeting()} 🌤️</h1>
