@@ -1,18 +1,19 @@
-/* Cozy Theme: warme Creme-Töne, Salbeigrün und Terrakotta */
+/* Warm & häuslich: Kerzenlicht-Creme, Holzbraun, Olivgrün und Terrakotta */
 :root {
-  --bg: #fbf6ee;
-  --surface: #ffffff;
-  --surface-2: #f3ece0;
-  --text: #4a4238;
-  --text-soft: #8a7f70;
-  --border: #ebe2d3;
-  --sage: #8fae8b;
-  --sage-deep: #6f8f6c;
-  --sage-soft: #e8efe3;
-  --terra: #c9825b;
-  --terra-soft: #f6e4d8;
-  --shadow: 0 6px 18px rgba(90, 70, 40, 0.08);
-  --radius: 18px;
+  --bg: #f6ecdc;
+  --surface: #fffaf2;
+  --surface-2: #f0e3cd;
+  --text: #4a3828;
+  --text-soft: #8d7459;
+  --border: #e6d4b8;
+  --sage: #8c9a63;
+  --sage-deep: #5d6b3d;
+  --sage-soft: #e7e9cf;
+  --terra: #c4703f;
+  --terra-soft: #f6dcc3;
+  --wood: #b08a5e;
+  --shadow: 0 8px 22px rgba(94, 60, 25, 0.13);
+  --radius: 22px;
 
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 16px;
@@ -29,7 +30,10 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse at 50% -10%, #fff3dc 0%, transparent 60%),
+    var(--bg);
+  min-height: 100svh;
   overscroll-behavior-y: none;
 }
 
@@ -101,6 +105,28 @@ textarea {
   border-radius: var(--radius);
   padding: 16px;
   box-shadow: var(--shadow);
+  position: relative;
+}
+
+/* Kleiner Heftstreifen oben, wie ein angepinntes Notizkärtchen */
+.card::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 46px;
+  height: 14px;
+  transform: translateX(-50%) rotate(-2deg);
+  background: var(--terra-soft);
+  opacity: 0.8;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.card.soft::before,
+.card.warn::before,
+.card.celebrate::before {
+  display: none;
 }
 
 .card.soft {
@@ -689,7 +715,7 @@ textarea {
   max-width: 560px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 250, 242, 0.94);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
   padding: 6px 4px calc(6px + env(safe-area-inset-bottom));

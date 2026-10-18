@@ -4,6 +4,7 @@ import { db, getXp } from '../db'
 import { useKv } from '../lib/store'
 import { defaultSlot, findRecipe, type RezepteFile, type TrainingFile } from '../lib/content'
 import { addDays, dateKey, formatDay, greeting, streakOf } from '../lib/dates'
+import { CozyScene } from '../components/CozyScene'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'more'
 
@@ -82,6 +83,7 @@ export function Today({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
 
   return (
     <section className="stack">
+      <CozyScene mood={habits.length > 0 && doneCount >= Math.ceil(habits.length / 2) ? 'happy' : 'calm'} />
       <header>
         <p className="subtitle">{formatDay(today)}</p>
         <h1 className="title">{greeting()} 🌤️</h1>
