@@ -9,6 +9,9 @@ import { More } from './screens/More'
 import { Login } from './screens/Login'
 import { supabase } from './lib/supabase'
 import { startSync, syncOnLogin } from './lib/sync'
+import { Unlock } from './screens/Unlock'
+import { db } from './db'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { BowlIcon, CalendarIcon, DumbbellIcon, HomeIcon, PotIcon } from './components/Icons'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'more'
@@ -25,6 +28,9 @@ function App() {
   const [tab, setTab] = useState<Tab>('today')
   // undefined = noch am Prüfen, null = abgemeldet
   const [session, setSession] = useState<Session | null | undefined>(undefined)
+  const [skipUnlock, setSkipUnlock] = useState(false)
+  // undefined = noch am Laden, false = Daten fehlen noch
+  const bundleLoaded = useLiveQuery(async () => !!(await db.kv.get('bundle.v1')), [], undefined)
 
   useEffect(() => {
     startSync()
@@ -48,6 +54,10 @@ function App() {
   }
 
   if (session === null) return <Login />
+
+  if (bundleLoaded === false && !skipUnlock) {
+    return <Unlock onSkip={() => setSkipUnlock(true)} />
+  }
 
   return (
     <div className="app">
