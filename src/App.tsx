@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import type { ComponentType } from 'react'
 import { Today } from './screens/Today'
 import { Calendar } from './screens/Calendar'
 import { Food } from './screens/Food'
@@ -8,15 +9,16 @@ import { More } from './screens/More'
 import { Login } from './screens/Login'
 import { supabase } from './lib/supabase'
 import { startSync, syncOnLogin } from './lib/sync'
+import { BowlIcon, CalendarIcon, DumbbellIcon, HomeIcon, PotIcon } from './components/Icons'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'more'
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'today', label: 'Heute', icon: '🏡' },
-  { id: 'calendar', label: 'Kalender', icon: '📅' },
-  { id: 'food', label: 'Essen', icon: '🥗' },
-  { id: 'training', label: 'Training', icon: '🏋️' },
-  { id: 'more', label: 'Mehr', icon: '✨' },
+const TABS: { id: Tab; label: string; Icon: ComponentType<{ size?: number }> }[] = [
+  { id: 'today', label: 'Heute', Icon: HomeIcon },
+  { id: 'calendar', label: 'Kalender', Icon: CalendarIcon },
+  { id: 'food', label: 'Essen', Icon: BowlIcon },
+  { id: 'training', label: 'Training', Icon: DumbbellIcon },
+  { id: 'more', label: 'Mehr', Icon: PotIcon },
 ]
 
 function App() {
@@ -66,7 +68,7 @@ function App() {
             onClick={() => setTab(t.id)}
             aria-current={tab === t.id ? 'page' : undefined}
           >
-            <span className="tab-icon" aria-hidden="true">{t.icon}</span>
+            <span className="tab-icon" aria-hidden="true"><t.Icon size={24} /></span>
             <span className="tab-label">{t.label}</span>
           </button>
         ))}
