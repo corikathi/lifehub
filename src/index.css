@@ -759,3 +759,26 @@ textarea {
 .tab.active .tab-label {
   font-weight: 700;
 }
+
+/* Sanftes Atmen der Katze */
+.cat-breathe {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: cat-breathe 3.6s ease-in-out infinite;
+}
+
+@keyframes cat-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.02, 1.035);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-breathe {
+    animation: none;
+  }
+}

@@ -1,3 +1,5 @@
+import { Cat } from './Cat'
+
 // Kleine Wohnzimmer-Szene als Kopf des Heute-Tabs. Die Farben folgen der Tageszeit.
 
 function palette(hour: number) {
@@ -56,24 +58,7 @@ export function CozyScene({
       {/* Kerze auf dem Tisch */}
       <rect x="22" y="104" width="14" height="18" rx="3" fill="#fffaf2" />
       <path d="M29 96 C26 100 27 103 29 103 C31 103 32 100 29 96 Z" fill="#f2a04f" />
-      {/* Maskottchen: ein kleiner Bär, der sich über erledigte Gewohnheiten freut */}
-      <g transform="translate(318 96)">
-        <circle cx="-14" cy="-22" r="6" fill="#b08a5e" />
-        <circle cx="14" cy="-22" r="6" fill="#b08a5e" />
-        <circle cx="0" cy="0" r="20" fill="#c9965f" />
-        <circle cx="-7" cy="-4" r="2.4" fill="#4a3828" />
-        <circle cx="7" cy="-4" r="2.4" fill="#4a3828" />
-        {mood === 'happy' ? (
-          <path d="M-6 5 Q0 11 6 5" stroke="#4a3828" strokeWidth="2" fill="none" strokeLinecap="round" />
-        ) : (
-          <line x1="-5" y1="6" x2="5" y2="6" stroke="#4a3828" strokeWidth="2" strokeLinecap="round" />
-        )}
-        <circle cx="-12" cy="2" r="3" fill="#f2a58a" opacity="0.7" />
-        <circle cx="12" cy="2" r="3" fill="#f2a58a" opacity="0.7" />
-        {mood === 'happy' && (
-          <text x="18" y="-18" fontSize="12" fill="#c4703f">✦</text>
-        )}
-      </g>
+      <Cat x={318} y={100} happy={mood === 'happy'} />
     </svg>
   )
 }
