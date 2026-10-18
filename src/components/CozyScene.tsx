@@ -5,12 +5,12 @@ import { Cat } from './Cat'
 
 function palette(hour: number) {
   if (hour >= 6 && hour < 11)
-    return { skyTop: '#bcd7d3', skyBottom: '#f6e3c2', sun: '#fff1c9', hillFar: '#b6cdb9', hillNear: '#8fae8b', window: '#f6d58c', night: false }
+    return { skyTop: '#f4ead8', skyBottom: '#fbf3e4', sun: '#fff4d6', hillFar: '#eadcc2', hillNear: '#dcc8a6', tree: '#c9d1ab', window: '#ffe2a0', night: false }
   if (hour >= 11 && hour < 17)
-    return { skyTop: '#a9d0d6', skyBottom: '#f3e6c8', sun: '#fff7d6', hillFar: '#a9c6b0', hillNear: '#7f9d74', window: '#f2cf7e', night: false }
+    return { skyTop: '#f6eddc', skyBottom: '#fdf6e7', sun: '#fff7dc', hillFar: '#efe2c9', hillNear: '#e0cdab', tree: '#cfd6b2', window: '#ffe09a', night: false }
   if (hour >= 17 && hour < 21)
-    return { skyTop: '#c9b6c4', skyBottom: '#f5cfa0', sun: '#ffd49a', hillFar: '#b59c94', hillNear: '#8b7a62', window: '#ffc86b', night: false }
-  return { skyTop: '#3d4a63', skyBottom: '#6b6a7e', sun: '#f5e7b8', hillFar: '#4b5a6a', hillNear: '#37445a', window: '#ffd27a', night: true }
+    return { skyTop: '#f3e0cc', skyBottom: '#f9e8d2', sun: '#ffdca8', hillFar: '#e9d3b8', hillNear: '#d8bd9a', tree: '#c4c59d', window: '#ffcf7a', night: false }
+  return { skyTop: '#5b5a78', skyBottom: '#8f8590', sun: '#f7ebc4', hillFar: '#7b7487', hillNear: '#6a6078', tree: '#8d8aa0', window: '#ffd27a', night: true }
 }
 
 export function CozyScene({
@@ -58,7 +58,7 @@ export function CozyScene({
       <path d="M0 110 C 60 80, 120 96, 180 84 C 240 72, 300 96, 360 82 L360 170 L0 170 Z" fill={p.hillFar} />
 
       {/* Bäume hinten */}
-      <g fill={p.hillNear} opacity="0.85">
+      <g fill={p.tree} opacity="0.9">
         <path d="M262 96 L274 62 L286 96 Z" />
         <path d="M278 100 L292 68 L306 100 Z" />
         <path d="M24 92 L34 66 L44 92 Z" />
@@ -69,15 +69,15 @@ export function CozyScene({
 
       {/* Haus */}
       <g>
-        <rect x="112" y="92" width="62" height="48" rx="4" fill="#f7ead2" />
-        <path d="M104 96 L143 66 L182 96 Z" fill="#c4703f" />
+        <rect x="112" y="92" width="62" height="48" rx="4" fill="#fffaf0" />
+        <path d="M104 96 L143 66 L182 96 Z" fill="#d9a07a" />
         <rect x="136" y="110" width="14" height="30" rx="3" fill="#8d6a4a" />
         <rect x="156" y="104" width="12" height="12" rx="2" fill={p.window} />
         <rect x="120" y="104" width="12" height="12" rx="2" fill={p.window} />
         {/* Schornstein mit Rauch */}
         <rect x="150" y="70" width="8" height="16" fill="#a25f3a" />
-        <circle cx="154" cy="64" r="3" fill="#f7ead2" opacity="0.8" />
-        <circle cx="158" cy="56" r="2.2" fill="#f7ead2" opacity="0.6" />
+        <circle cx="154" cy="64" r="3" fill="#fffaf0" opacity="0.8" />
+        <circle cx="158" cy="56" r="2.2" fill="#fffaf0" opacity="0.6" />
       </g>
 
       {/* Weg zur Tür */}
@@ -86,9 +86,9 @@ export function CozyScene({
       {/* Bäume vorn */}
       <g>
         <rect x="46" y="118" width="5" height="20" fill="#7a5a3a" />
-        <circle cx="48" cy="110" r="14" fill="#8c9a63" />
+        <circle cx="48" cy="110" r="14" fill={p.tree} />
         <rect x="200" y="122" width="4" height="16" fill="#7a5a3a" />
-        <circle cx="202" cy="116" r="11" fill="#6f7f4f" />
+        <circle cx="202" cy="116" r="11" fill={p.tree} />
       </g>
 
       {/* Katze auf dem Weg */}
