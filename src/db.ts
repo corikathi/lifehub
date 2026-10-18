@@ -20,12 +20,11 @@ export interface CalEvent {
   note?: string
 }
 
-export type MealType = 'Frühstück' | 'Mittag' | 'Abendessen' | 'Snack'
-
+// Alte Tabellen aus der ersten Version bleiben bestehen, werden aber nicht mehr genutzt.
 export interface Meal {
   id?: number
   date: string
-  type: MealType
+  type: string
   text: string
 }
 
@@ -59,6 +58,13 @@ export interface WorkoutSet {
   createdAt: number
 }
 
+// Schlüssel-Wert-Speicher für Essen, Training, Rad und die importierten Daten.
+// Jeder Eintrag ist ein ganzes Dokument, z. B. "meals", "workoutLog", "content.rezepte".
+export interface KvRow {
+  key: string
+  value: unknown
+}
+
 class LifehubDB extends Dexie {
   habits!: EntityTable<Habit, 'id'>
   habitLogs!: EntityTable<HabitLog, 'id'>
@@ -68,6 +74,7 @@ class LifehubDB extends Dexie {
   workoutPlans!: EntityTable<WorkoutPlan, 'id'>
   workouts!: EntityTable<Workout, 'id'>
   workoutSets!: EntityTable<WorkoutSet, 'id'>
+  kv!: EntityTable<KvRow, 'key'>
 
   constructor() {
     super('lifehub')
@@ -81,19 +88,26 @@ class LifehubDB extends Dexie {
       workouts: '++id, date',
       workoutSets: '++id, workoutId, exercise',
     })
+    this.version(2).stores({
+      kv: 'key',
+    })
   }
 }
 
 export const db = new LifehubDB()
 
 // Erfahrungspunkte werden aus den Logs berechnet, damit es keine zweite Wahrheit gibt.
-export const XP = { habit: 10, meal: 5, workout: 30 }
+export const XP = { habit: 10, workout: 30, ride: 20 }
 
 export async function getXp(): Promise<number> {
-  const [habitDone, mealCount, finished] = await Promise.all([
+  const [habitDone, workoutLog, rideLog] = await Promise.all([
     db.habitLogs.count(),
-    db.meals.count(),
-    db.workouts.filter((w) => w.finishedAt !== undefined).count(),
+    db.kv.get('workoutLog'),
+    db.kv.get('rides'),
   ])
-  return habitDone * XP.habit + mealCount * XP.meal + finished * XP.workout
+  const workouts = Array.isArray(workoutLog?.value) ? workoutLog.value.length : 0
+  const rides = Array.isArray((rideLog?.value as { log?: unknown[] } | undefined)?.log)
+    ? (rideLog!.value as { log: unknown[] }).log.length
+    : 0
+  return habitDone * XP.habit + workouts * XP.workout + rides * XP.ride
 }

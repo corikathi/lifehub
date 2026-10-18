@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Persönliche Exporte (Datenschutz): nie ins Repo
+fuel-flow-export/
+*.personal.json

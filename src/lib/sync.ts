@@ -6,19 +6,10 @@ import Dexie from 'dexie'
 import { db } from '../db'
 import { supabase } from './supabase'
 
-const TABLE_NAMES = [
-  'habits',
-  'habitLogs',
-  'events',
-  'meals',
-  'water',
-  'workoutPlans',
-  'workouts',
-  'workoutSets',
-] as const
+// Alle Tabellen werden synchronisiert, damit neue Bereiche automatisch dabei sind
+const tableNames = () => db.tables.map((t) => t.name)
 
-type TableName = (typeof TABLE_NAMES)[number]
-type Snapshot = Record<TableName, unknown[]>
+type Snapshot = Record<string, unknown[]>
 
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error'
 
@@ -44,7 +35,7 @@ let started = false
 
 async function exportSnapshot(): Promise<Snapshot> {
   const entries = await Promise.all(
-    TABLE_NAMES.map(async (name) => [name, await db.table(name).toArray()] as const),
+    tableNames().map(async (name) => [name, await db.table(name).toArray()] as const),
   )
   return Object.fromEntries(entries) as Snapshot
 }
@@ -52,8 +43,8 @@ async function exportSnapshot(): Promise<Snapshot> {
 async function importSnapshot(snapshot: Partial<Snapshot>) {
   applyingRemote = true
   try {
-    await db.transaction('rw', TABLE_NAMES.map((n) => db.table(n)), async () => {
-      for (const name of TABLE_NAMES) {
+    await db.transaction('rw', tableNames().map((n) => db.table(n)), async () => {
+      for (const name of tableNames()) {
         const table = db.table(name)
         await table.clear()
         const rows = snapshot[name] ?? []
@@ -66,8 +57,8 @@ async function importSnapshot(snapshot: Partial<Snapshot>) {
 }
 
 async function clearLocal() {
-  await db.transaction('rw', TABLE_NAMES.map((n) => db.table(n)), async () => {
-    for (const name of TABLE_NAMES) await db.table(name).clear()
+  await db.transaction('rw', tableNames().map((n) => db.table(n)), async () => {
+    for (const name of tableNames()) await db.table(name).clear()
   })
 }
 

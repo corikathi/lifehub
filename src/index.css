@@ -443,6 +443,205 @@ textarea {
   color: var(--terra);
 }
 
+/* ---------- Segmente, Stepper, Tageskarten ---------- */
+
+.segmented {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: 14px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.segmented > button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 8px 6px;
+  min-height: 40px;
+  font-weight: 600;
+  color: var(--text-soft);
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.segmented > button.active {
+  background: var(--surface);
+  color: var(--sage-deep);
+  box-shadow: var(--shadow);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.day-card {
+  padding: 14px;
+}
+
+.day-card.today-card {
+  border-color: var(--sage);
+}
+
+.day-card.skipped {
+  opacity: 0.6;
+}
+
+.day-head {
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.day-name {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-soft);
+}
+
+.day-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.hint {
+  background: var(--terra-soft);
+  color: #7a4a2e;
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.warn {
+  background: var(--terra-soft);
+  color: #7a4a2e;
+}
+
+.warn p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.ingredients,
+.steps {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  font-size: 15px;
+}
+
+.ingredients li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.steps {
+  list-style: decimal;
+  padding-left: 20px;
+}
+
+.steps li {
+  margin-bottom: 6px;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.check-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--sage-deep);
+}
+
+.done-text {
+  text-decoration: line-through;
+  color: var(--text-soft);
+}
+
+.done-card {
+  background: var(--sage-soft);
+}
+
+.celebrate {
+  background: linear-gradient(135deg, var(--sage-soft), var(--terra-soft));
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.celebrate-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.fold summary {
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.exercise-svg {
+  margin-top: 10px;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.exercise-svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ride-card {
+  text-align: center;
+}
+
+.ride-targets {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.ride-targets strong {
+  color: var(--text);
+}
+
+.timer.big {
+  font-size: 56px;
+}
+
+.file-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 /* ---------- Login ---------- */
 
 .login {

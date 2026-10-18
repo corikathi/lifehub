@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, getXp } from '../db'
+import { useKv } from '../lib/store'
+import { defaultSlot, findRecipe, type RezepteFile, type TrainingFile } from '../lib/content'
 import { addDays, dateKey, formatDay, greeting, streakOf } from '../lib/dates'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'more'
@@ -35,12 +37,17 @@ export function Today({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
     [],
   )
   const xp = useLiveQuery(getXp, [], 0)
-  const meals = useLiveQuery(() => db.meals.where('date').equals(today).count(), [today], 0)
-  const water = useLiveQuery(
-    async () => (await db.water.where('date').equals(today).toArray()).reduce((s, w) => s + w.ml, 0),
-    [today],
-    0,
-  )
+  const [drinks] = useKv<Record<string, { ml: number }[]>>('drinks', {})
+  const water = (drinks[today] ?? []).reduce((sum, d) => sum + d.ml, 0)
+  const [content] = useKv<RezepteFile | null>('content.rezepte', null)
+  const [trainingContent] = useKv<TrainingFile | null>('content.training', null)
+  const [mealsState] = useKv<{ weeks: Record<string, string[]> }>('meals', { weeks: {} })
+  const [trainingWeeks] = useKv<Record<string, { plan: string[] }>>('trainingWeeks', {})
+  const weekIndex = (new Date(`${today}T12:00:00`).getDay() + 6) % 7
+  const monday = addDays(today, -weekIndex)
+  const slot = mealsState.weeks[monday]?.[weekIndex] ?? defaultSlot(monday, weekIndex)
+  const todayMeal = slot.startsWith('custom:') ? slot.slice(7) : findRecipe(content?.rezepte ?? [], slot)?.titel ?? 'Noch nichts geplant'
+  const todayTraining = trainingWeeks[monday]?.plan?.[weekIndex] ?? trainingContent?.wochenplan_standard[weekIndex]?.split(': ')[1] ?? '–'
 
   const doneToday = (habitId: number) => logs.some((l) => l.habitId === habitId && l.date === today)
 
@@ -150,13 +157,13 @@ export function Today({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
       <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <button type="button" className="card" style={{ textAlign: 'left', cursor: 'pointer' }} onClick={() => onNavigate('food')}>
           <p className="muted">Essen</p>
-          <p style={{ fontWeight: 600 }}>{meals ?? 0} Mahlzeiten</p>
+          <p style={{ fontWeight: 600 }}>{todayMeal}</p>
           <p className="muted">💧 {((water ?? 0) / 1000).toFixed(1)} L</p>
         </button>
         <button type="button" className="card" style={{ textAlign: 'left', cursor: 'pointer' }} onClick={() => onNavigate('training')}>
           <p className="muted">Training</p>
-          <p style={{ fontWeight: 600 }}>Workout starten</p>
-          <p className="muted">🏋️ Plan wählen</p>
+          <p style={{ fontWeight: 600 }}>{todayTraining}</p>
+          <p className="muted">🏋️ Heute im Plan</p>
         </button>
       </div>
 
