@@ -1,19 +1,19 @@
 /* Warm & häuslich: Kerzenlicht-Creme, Holzbraun, Olivgrün und Terrakotta */
 :root {
-  --bg: #efdcbd;
-  --surface: #fbf0dd;
-  --surface-2: #ead3ad;
+  --bg: #cfdfdc;
+  --surface: #f2f8f6;
+  --surface-2: #dcebe7;
   --font-body: 'Nunito', system-ui, 'Segoe UI', sans-serif;
   --font-head: 'Fraunces', Georgia, serif;
-  --text: #4a3828;
-  --text-soft: #8d7459;
-  --border: #e6d4b8;
-  --sage: #8c9a63;
-  --sage-deep: #5d6b3d;
-  --sage-soft: #e7e9cf;
-  --terra: #c4703f;
-  --terra-soft: #f6dcc3;
-  --wood: #b08a5e;
+  --text: #1f3b38;
+  --text-soft: #5d7b76;
+  --border: #bdd3ce;
+  --sage: #6fa597;
+  --sage-deep: #2d6a5e;
+  --sage-soft: #d5eae4;
+  --terra: #e5835f;
+  --terra-soft: #f9dcCf;
+  --wood: #7f9f98;
   --shadow: 0 8px 22px rgba(94, 60, 25, 0.13);
   --radius: 22px;
 
@@ -33,9 +33,8 @@
 body {
   margin: 0;
   background:
-    radial-gradient(ellipse at 50% -5%, #f8e7c8 0%, transparent 55%),
-    radial-gradient(ellipse at 100% 100%, #e6c99c 0%, transparent 50%),
-    linear-gradient(180deg, #f1dcb9 0%, #ecd3a9 100%);
+    radial-gradient(ellipse at 50% -5%, #e2eeeb 0%, transparent 55%),
+    linear-gradient(180deg, #d3e3e0 0%, #bfd4d0 100%);
   min-height: 100svh;
   overscroll-behavior-y: none;
 }
@@ -719,7 +718,7 @@ textarea {
   max-width: 560px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  background: rgba(240, 220, 185, 0.96);
+  background: rgba(238, 246, 243, 0.96);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
   padding: 6px 4px calc(6px + env(safe-area-inset-bottom));

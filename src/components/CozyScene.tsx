@@ -5,12 +5,12 @@ import { Cat } from './Cat'
 
 function palette(hour: number) {
   if (hour >= 6 && hour < 11)
-    return { skyTop: '#f4ead8', skyBottom: '#fbf3e4', sun: '#fff4d6', hillFar: '#eadcc2', hillNear: '#dcc8a6', tree: '#c9d1ab', window: '#ffe2a0', night: false }
+    return { skyTop: '#cfe6e2', skyBottom: '#eef7f4', sun: '#fff4d6', hillFar: '#b9d6cd', hillNear: '#98c2b5', tree: '#7fb0a1', window: '#ffe2a0', night: false }
   if (hour >= 11 && hour < 17)
-    return { skyTop: '#f6eddc', skyBottom: '#fdf6e7', sun: '#fff7dc', hillFar: '#efe2c9', hillNear: '#e0cdab', tree: '#cfd6b2', window: '#ffe09a', night: false }
+    return { skyTop: '#c4e0dc', skyBottom: '#e9f5f2', sun: '#fff7dc', hillFar: '#afd0c6', hillNear: '#8dbcaf', tree: '#6fa597', window: '#ffe09a', night: false }
   if (hour >= 17 && hour < 21)
-    return { skyTop: '#f3e0cc', skyBottom: '#f9e8d2', sun: '#ffdca8', hillFar: '#e9d3b8', hillNear: '#d8bd9a', tree: '#c4c59d', window: '#ffcf7a', night: false }
-  return { skyTop: '#5b5a78', skyBottom: '#8f8590', sun: '#f7ebc4', hillFar: '#7b7487', hillNear: '#6a6078', tree: '#8d8aa0', window: '#ffd27a', night: true }
+    return { skyTop: '#c9d6e2', skyBottom: '#eef2f4', sun: '#ffdca8', hillFar: '#b4c7c9', hillNear: '#8fb0aa', tree: '#6d9a90', window: '#ffcf7a', night: false }
+  return { skyTop: '#3f5566', skyBottom: '#6d8590', sun: '#f7ebc4', hillFar: '#4f6a72', hillNear: '#3f5c62', tree: '#557a72', window: '#ffd27a', night: true }
 }
 
 export function CozyScene({
@@ -69,15 +69,15 @@ export function CozyScene({
 
       {/* Haus */}
       <g>
-        <rect x="112" y="92" width="62" height="48" rx="4" fill="#fffaf0" />
+        <rect x="112" y="92" width="62" height="48" rx="4" fill="#f7fbf9" />
         <path d="M104 96 L143 66 L182 96 Z" fill="#d9a07a" />
         <rect x="136" y="110" width="14" height="30" rx="3" fill="#8d6a4a" />
         <rect x="156" y="104" width="12" height="12" rx="2" fill={p.window} />
         <rect x="120" y="104" width="12" height="12" rx="2" fill={p.window} />
         {/* Schornstein mit Rauch */}
         <rect x="150" y="70" width="8" height="16" fill="#a25f3a" />
-        <circle cx="154" cy="64" r="3" fill="#fffaf0" opacity="0.8" />
-        <circle cx="158" cy="56" r="2.2" fill="#fffaf0" opacity="0.6" />
+        <circle cx="154" cy="64" r="3" fill="#f7fbf9" opacity="0.8" />
+        <circle cx="158" cy="56" r="2.2" fill="#f7fbf9" opacity="0.6" />
       </g>
 
       {/* Weg zur Tür */}
