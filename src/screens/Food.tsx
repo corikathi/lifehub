@@ -46,6 +46,9 @@ export function Food() {
   const [openDay, setOpenDay] = useState<number | null>(null)
   const [view, setView] = useState<'plan' | 'shopping' | 'hunger' | 'kcal'>('plan')
   const [section, setSection] = useState<'heute' | 'woche' | 'rezepte'>('heute')
+  // Einkaufsrunde: Tage von–bis (0 = Montag). Standard: die ganze Woche.
+  const [shopFrom, setShopFrom] = useState(0)
+  const [shopTo, setShopTo] = useState(6)
 
   const days = weekDays(weekStart)
   const skipped = meals.skip[weekStart] ?? []
@@ -130,7 +133,29 @@ export function Food() {
 
       {view === 'hunger' && <Hunger />}
       {view === 'shopping' && content && (
-        <ShoppingList content={content} slots={[0, 1, 2, 3, 4, 5, 6].map((i) => (skipped.includes(i) ? '' : slotFor(i)))} persons={meals.persons} monday={weekStart} />
+        <>
+          {/* Einkaufsrunde: welche Tage der Woche auf die Liste sollen, z. B. Freitag bis Sonntag */}
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <span className="muted">Von</span>
+            <select className="select" style={{ maxWidth: 120 }} value={shopFrom} onChange={(e) => setShopFrom(Number(e.target.value))} aria-label="Einkauf von">
+              {DAYS.map((label, j) => (
+                <option key={label} value={j}>{label}</option>
+              ))}
+            </select>
+            <span className="muted">bis</span>
+            <select className="select" style={{ maxWidth: 120 }} value={shopTo} onChange={(e) => setShopTo(Number(e.target.value))} aria-label="Einkauf bis">
+              {DAYS.map((label, j) => (
+                <option key={label} value={j}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <ShoppingList
+            content={content}
+            slots={[0, 1, 2, 3, 4, 5, 6].map((i) => (i < shopFrom || i > shopTo || skipped.includes(i) ? '' : slotFor(i)))}
+            persons={meals.persons}
+            monday={weekStart}
+          />
+        </>
       )}
 
       {view === 'plan' && (
