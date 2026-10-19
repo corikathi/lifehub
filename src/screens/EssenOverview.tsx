@@ -20,11 +20,23 @@ interface MealsState {
   weeks: Record<string, string[]>
 }
 
+// Die Mahlzeiten-Karte der Vorlage entfällt, die Einträge stehen unter der Kalorien-Suche
+function removeMealsCard(html: string): string {
+  const at = html.indexOf('Mahlzeiten heute')
+  if (at < 0) return html
+  const header = html.lastIndexOf('<div', at)
+  const start = html.lastIndexOf('<div', header - 1)
+  const listEnd = html.indexOf('</sc-for>', at)
+  if (listEnd < 0) return html
+  const end = html.indexOf('</div>', listEnd) + '</div>'.length
+  return html.slice(0, start) + html.slice(end)
+}
+
 // Vorlage aufteilen: oben kcal und Makros, unten Mahlzeiten und Rest
 const SPLIT = ESSEN.lastIndexOf('<div', ESSEN.indexOf('Mahlzeiten heute'))
 const CONTAINER_OPEN = ESSEN.slice(0, ESSEN.indexOf('>') + 1)
 const PART_TOP = ESSEN.slice(0, SPLIT) + '</div>'
-const PART_BOTTOM = CONTAINER_OPEN + ESSEN.slice(SPLIT)
+const PART_BOTTOM = removeMealsCard(CONTAINER_OPEN + ESSEN.slice(SPLIT))
 
 // Ziele für Makros. Der Prototyp hat keine Werte, diese sind Startwerte und lassen sich im Code ändern.
 const TARGET_PROTEIN = 140
