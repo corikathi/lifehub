@@ -18,37 +18,7 @@ export const ESSEN = `<div data-screen-label="Essen" style="display:flex;flex-di
 </div>
 <p style="margin:0;font-size:13px;color:#6b5340;background:#f7efe0;border-radius:14px;padding:10px 12px;text-wrap:pretty">{{ macroHint }}</p>
 </div>
-<div style="display:flex;flex-direction:column;gap:10px">
-<div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:20px">Mahlzeiten heute</h2><span style="font-size:13px;color:#8d7459;font-weight:600">{{ mealsDone }}</span></div>
-<sc-for list="{{ meals }}" as="ml" hint-placeholder-count="5">
-<button data-act="{{ ml.toggle }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;background:{{ ml.bg }};border-radius:20px;padding:12px 14px;cursor:pointer;box-shadow:0 3px 10px rgba(94,60,25,.06)">
-<span style="width:28px;height:28px;flex:none;border-radius:50%;border:2.5px solid #e8b04a;background:{{ ml.checkBg }};display:grid;place-items:center;color:#fffaf0;font-weight:800;font-size:14px">{{ ml.mark }}</span>
-<span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:800;color:#8d7459;letter-spacing:.3px">{{ ml.slot }}</span><span style="font-weight:700;font-size:15px;color:#4a3828">{{ ml.name }}</span></span>
-<span style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none"><span style="font-size:13px;font-weight:800;padding:3px 9px;border-radius:10px;background:#e3e8c8;color:#4f5e2a;white-space:nowrap">{{ ml.p }} g P</span><span style="font-size:12px;color:#8d7459;white-space:nowrap">{{ ml.kcal }} kcal</span></span>
-</button>
-</sc-for>
-</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-<sc-for list="{{ progress }}" as="pg" hint-placeholder-count="2">
-<div style="background:{{ pg.bg }};border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:4px">
-<span style="font-weight:800;font-size:14px;color:{{ pg.ink }}">{{ pg.name }}</span>
-<span style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:26px;line-height:1.1;color:{{ pg.ink }};white-space:nowrap">{{ pg.val }}</span>
-<span style="font-size:12px;font-weight:700;color:{{ pg.ink }}">{{ pg.delta }}</span>
-<svg viewBox="0 0 100 30" style="width:100%;height:30px;margin-top:4px"><polyline points="{{ pg.points }}" fill="none" stroke="{{ pg.ink }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
-</div>
-</sc-for>
-</div>
-<div style="background:#fffaf0;border-radius:24px;padding:16px;box-shadow:0 6px 18px rgba(94,60,25,.08);display:flex;flex-direction:column;gap:12px">
-<div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:18px">Proteinziel diese Woche</h2><span style="font-size:13px;color:#8d7459;font-weight:700">{{ protHit }}</span></div>
-<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
-<sc-for list="{{ protWeek }}" as="pw" hint-placeholder-count="7">
-<div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-<div style="width:100%;height:70px;border-radius:99px;background:#f2e8d6;display:flex;align-items:flex-end;overflow:hidden"><div style="width:100%;height:{{ pw.h }};border-radius:99px;background:{{ pw.bg }}"></div></div>
-<span style="font-size:12px;font-weight:700;color:#8d7459">{{ pw.d }}</span>
-</div>
-</sc-for>
-</div>
-</div>
+
 <div style="background:#f3c25e;border-radius:26px;overflow:hidden">
 <svg viewBox="0 0 360 130" style="width:100%;height:auto;display:block">
 <rect width="360" height="130" fill="#f3c25e"></rect>
@@ -78,6 +48,46 @@ export const ESSEN = `<div data-screen-label="Essen" style="display:flex;flex-di
 <div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed #ecdcc0;font-size:14px"><span style="font-weight:600">{{ z.name }}</span><span style="color:#6b5340;font-variant-numeric:tabular-nums">{{ z.amount }}</span></div>
 </sc-for>
 </div>
+<details style="background:#fffaf0;border-radius:18px;padding:12px 14px">
+<summary style="font-weight:800;font-size:14px;color:#3d2a12;cursor:pointer">Anleitung anzeigen</summary>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+<sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+<p style="margin:0;font-size:14px;line-height:1.45;color:#4a3828"><b>{{ st.n }}.</b> {{ st.text }}</p>
+</sc-for>
+</div>
+</details>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:20px">Mahlzeiten heute</h2><span style="font-size:13px;color:#8d7459;font-weight:600">{{ mealsDone }}</span></div>
+<sc-for list="{{ meals }}" as="ml" hint-placeholder-count="5">
+<button data-act="{{ ml.toggle }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;background:{{ ml.bg }};border-radius:20px;padding:12px 14px;cursor:pointer;box-shadow:0 3px 10px rgba(94,60,25,.06)">
+<span style="width:28px;height:28px;flex:none;border-radius:50%;border:2.5px solid #e8b04a;background:{{ ml.checkBg }};display:grid;place-items:center;color:#fffaf0;font-weight:800;font-size:14px">{{ ml.mark }}</span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:800;color:#8d7459;letter-spacing:.3px">{{ ml.slot }}</span><span style="font-weight:700;font-size:15px;color:#4a3828">{{ ml.name }}</span></span>
+<span style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none"><span style="font-size:13px;font-weight:800;padding:3px 9px;border-radius:10px;background:#e3e8c8;color:#4f5e2a;white-space:nowrap">{{ ml.p }} g P</span><span style="font-size:12px;color:#8d7459;white-space:nowrap">{{ ml.kcal }} kcal</span></span>
+</button>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<sc-for list="{{ progress }}" as="pg" hint-placeholder-count="2">
+<div style="background:{{ pg.bg }};border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:4px">
+<span style="font-weight:800;font-size:14px;color:{{ pg.ink }}">{{ pg.name }}</span>
+<span style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:26px;line-height:1.1;color:{{ pg.ink }};white-space:nowrap">{{ pg.val }}</span>
+<span style="font-size:12px;font-weight:700;color:{{ pg.ink }}">{{ pg.delta }}</span>
+<svg viewBox="0 0 100 30" style="width:100%;height:30px;margin-top:4px"><polyline points="{{ pg.points }}" fill="none" stroke="{{ pg.ink }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+</div>
+</sc-for>
+</div>
+<div style="background:#fffaf0;border-radius:24px;padding:16px;box-shadow:0 6px 18px rgba(94,60,25,.08);display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:18px">Proteinziel diese Woche</h2><span style="font-size:13px;color:#8d7459;font-weight:700">{{ protHit }}</span></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
+<sc-for list="{{ protWeek }}" as="pw" hint-placeholder-count="7">
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+<div style="width:100%;height:70px;border-radius:99px;background:#f2e8d6;display:flex;align-items:flex-end;overflow:hidden"><div style="width:100%;height:{{ pw.h }};border-radius:99px;background:{{ pw.bg }}"></div></div>
+<span style="font-size:12px;font-weight:700;color:#8d7459">{{ pw.d }}</span>
+</div>
+</sc-for>
 </div>
 </div>
 

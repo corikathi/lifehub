@@ -180,6 +180,7 @@ export function EssenOverview({ part }: { part: 'heute' | 'trend' }) {
     ingredients: recipe
       ? recipe.zutaten_fuer_3.map((z) => ({ name: z.name, amount: `${scaleAmount(z, persons)} ${z.einheit}` }))
       : [],
+    steps: recipe ? recipe.schritte.map((text, i) => ({ n: i + 1, text })) : [],
     kcalEaten: eaten,
     kcalLeft: target - eaten,
     kcalTarget: target,
@@ -214,7 +215,8 @@ export function EssenOverview({ part }: { part: 'heute' | 'trend' }) {
     protWeek: days.map((_d, i) => ({
       d: dayLabel(i),
       h: `${Math.min(100, (weekProtein[i] / TARGET_PROTEIN) * 100)}%`,
-      bg: weekProtein[i] >= TARGET_PROTEIN ? '#8fa35a' : '#e8d7b8',
+      // Grün: Ziel erreicht. Gold: angefangen. Sonst bleibt der Balken leer.
+      bg: weekProtein[i] >= TARGET_PROTEIN ? '#8fa35a' : weekProtein[i] > 0 ? '#e8b04a' : '#e8d7b8',
     })),
     shop,
     shopOpen: String(shopOpen),
