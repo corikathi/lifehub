@@ -48,6 +48,10 @@ export function Geld({ onOpenSheet }: { onOpenSheet: (kind: string) => void }) {
     availStr: availDraft ?? String(budget.avail).replace('.', ','),
     moneyLeft: eur(Math.round(free)),
     perDay: eur(Math.round(free / daysLeft)),
+    monthLine: started
+      ? `${new Date(yearNum, monthNum - 1, 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })} · noch ${daysLeft} Tage`
+      : `Startet im ${new Date(yearNum, monthNum - 1, 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}`,
+    untilText: `bis ${lastDay}.${monthNum}.`,
     unallocated: notAllocated >= 0
       ? `Noch zu verteilen: ${eur(Math.round(notAllocated))}`
       : `${eur(Math.round(-notAllocated))} mehr auf Kategorien verteilt als verfügbar`,

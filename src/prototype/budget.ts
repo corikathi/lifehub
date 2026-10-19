@@ -1,11 +1,11 @@
 // Budget-Screen 1:1 aus dem Prototyp (Lifehub.dc.html). Platzhalter werden in renderTemplate gefüllt.
 export const BUDGET = `<sc-if value="{{ isGeld }}" hint-placeholder-val="{{ false }}">
 <div data-screen-label="Budget" style="display:flex;flex-direction:column;gap:18px;padding-top:6px">
-<div><p style="margin:0;font-size:14px;color:#8d7459">Oktober 2026 · noch 14 Tage</p><h1 style="margin:2px 0 0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:30px">Budget</h1></div>
+<div><p style="margin:0;font-size:14px;color:#8d7459">{{ monthLine }}</p><h1 style="margin:2px 0 0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:30px">Budget</h1></div>
 <div style="background:#fffaf0;border-radius:26px;padding:18px;box-shadow:0 6px 18px rgba(94,60,25,.08);display:flex;flex-direction:column;gap:14px">
 <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
 <div><p style="margin:0;font-size:13px;font-weight:700;color:#8d7459">Übrig für Lebensmittel &amp; Co.</p><p style="margin:2px 0 0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:40px;line-height:1.05">{{ moneyLeft }}</p></div>
-<div style="text-align:right;font-size:13px;color:#6b5340;line-height:1.4;white-space:nowrap"><div><b>{{ perDay }}</b> pro Tag</div><div>bis 31.10.</div></div>
+<div style="text-align:right;font-size:13px;color:#6b5340;line-height:1.4;white-space:nowrap"><div><b>{{ perDay }}</b> pro Tag</div><div>{{ untilText }}</div></div>
 </div>
 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f7efe0;border-radius:14px;padding:10px 12px">
 <span style="font-size:13px;font-weight:700;color:#6b5340">Insgesamt verfügbar</span>
