@@ -65,7 +65,6 @@ const GEW_CARD = PART_BOTTOM.indexOf('{{ pg.name }}')
 const GRID_START = PART_BOTTOM.lastIndexOf('<div', PART_BOTTOM.lastIndexOf('<div', GEW_CARD) - 1)
 const GRID_END = blockEnd(PART_BOTTOM, GRID_START)
 const PART_BOTTOM_A = PART_BOTTOM.slice(0, GRID_START)
-const PART_BOTTOM_GRID = PART_BOTTOM.slice(GRID_START, GRID_END)
 const PART_BOTTOM_C = PART_BOTTOM.slice(GRID_END)
 
 // Ziele für Makros. Der Prototyp hat keine Werte, diese sind Startwerte und lassen sich im Code ändern.
@@ -246,14 +245,13 @@ export function EssenOverview() {
 
   return (
     <>
-      <WeightEntry />
       <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
       <PlannedMeal />
       <Suche />
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         {PART_BOTTOM_A.trim() && <PrototypeScreen template={PART_BOTTOM_A} ctx={ctx} onAct={handleAct} />}
-        <PrototypeScreen template={PART_BOTTOM_GRID} ctx={ctx} onAct={handleAct} />
+        <WeightEntry />
         <PrototypeScreen template={PART_BOTTOM_C} ctx={ctx} onAct={handleAct} />
       </div>
     </>
