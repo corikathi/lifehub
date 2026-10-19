@@ -14,6 +14,7 @@ import { PrototypeScreen } from '../components/PrototypeScreen'
 import type { NutriEntry } from '../lib/nutrition'
 import { Suche } from './Suche'
 import { WeightEntry } from '../components/WeightEntry'
+import { PlannedMeal } from '../components/PlannedMeal'
 
 interface MealsState {
   persons: number
@@ -258,6 +259,7 @@ export function EssenOverview() {
   return (
     <>
       <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
+      <PlannedMeal />
       <Suche />
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
