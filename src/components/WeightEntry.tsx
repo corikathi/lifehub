@@ -34,8 +34,8 @@ export function WeightEntry() {
             void save()
           }}
         >
-          <input className="input" style={{ maxWidth: 110 }} inputMode="decimal" placeholder="kg heute" value={value} onChange={(e) => setValue(e.target.value)} aria-label="Gewicht in kg" />
-          <button className="btn primary" type="submit" disabled={!value.trim()}>Speichern</button>
+          <input className="input" style={{ maxWidth: 110 }} inputMode="decimal" placeholder="kg eintragen" value={value} onChange={(e) => setValue(e.target.value)} aria-label="Gewicht in kg" />
+          <button className="btn primary" type="submit" disabled={!value.trim()} aria-label="Gewicht speichern">+</button>
         </form>
       </div>
     </div>

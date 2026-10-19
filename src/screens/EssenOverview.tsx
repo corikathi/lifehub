@@ -33,10 +33,39 @@ function removeMealsCard(html: string): string {
   return html.slice(0, start) + html.slice(end)
 }
 
+// Ende eines ausgeglichenen Div-Blocks ab Startposition
+function blockEnd(s: string, start: number): number {
+  let depth = 0
+  let i = start
+  while (i < s.length) {
+    const o = s.indexOf('<div', i)
+    const c = s.indexOf('</div>', i)
+    if (c < 0) return -1
+    if (o >= 0 && o < c) {
+      depth++
+      i = o + 4
+    } else {
+      depth--
+      i = c + 6
+      if (depth === 0) return i
+    }
+  }
+  return -1
+}
+
+
 // Vorlage aufteilen: oben kcal und Makros, unten Mahlzeiten und Rest
 const SPLIT = ESSEN.lastIndexOf('<div', ESSEN.indexOf('Mahlzeiten heute'))
 const PART_TOP = ESSEN.slice(0, SPLIT) + '</div>'
 const PART_BOTTOM = removeMealsCard(ESSEN.slice(SPLIT)).replace(/<\/div>\s*$/, '')
+
+// Unterer Teil in drei Stücke: vor der Gewichtskarte, die Karten-Reihe, danach
+const GEW_CARD = PART_BOTTOM.indexOf('Gewicht</p>')
+const GRID_START = PART_BOTTOM.lastIndexOf('<div', PART_BOTTOM.lastIndexOf('<div', GEW_CARD) - 1)
+const GRID_END = blockEnd(PART_BOTTOM, GRID_START)
+const PART_BOTTOM_A = PART_BOTTOM.slice(0, GRID_START)
+const PART_BOTTOM_GRID = PART_BOTTOM.slice(GRID_START, GRID_END)
+const PART_BOTTOM_C = PART_BOTTOM.slice(GRID_END)
 
 // Ziele für Makros. Der Prototyp hat keine Werte, diese sind Startwerte und lassen sich im Code ändern.
 const TARGET_PROTEIN = 140
@@ -229,10 +258,14 @@ export function EssenOverview() {
   return (
     <>
       <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
-      <WeightEntry />
       <Suche />
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
-      <PrototypeScreen template={PART_BOTTOM} ctx={ctx} onAct={handleAct} style={{ display: 'flex', flexDirection: 'column', gap: 18 }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {PART_BOTTOM_A.trim() && <PrototypeScreen template={PART_BOTTOM_A} ctx={ctx} onAct={handleAct} />}
+        <PrototypeScreen template={PART_BOTTOM_GRID} ctx={ctx} onAct={handleAct} />
+        <WeightEntry />
+        <PrototypeScreen template={PART_BOTTOM_C} ctx={ctx} onAct={handleAct} />
+      </div>
     </>
   )
 }
