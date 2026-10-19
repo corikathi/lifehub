@@ -129,7 +129,7 @@ export function EssenOverview() {
     recipeTag: 'Heute · Plan',
     recipeInfo: recipe
       ? `Für ${persons} Personen · ${recipe.zutaten_fuer_3.length} Zutaten · ${recipe.schritte.length} Schritte`
-      : 'Noch kein Rezept für heute',
+      : todaySlot.startsWith('custom:') ? 'Eigenes Gericht' : 'Noch kein Rezept für heute',
     persons,
     lessP: 'persons:-1',
     moreP: 'persons:+1',
@@ -181,7 +181,7 @@ export function EssenOverview() {
       bg: weekProtein[i] >= TARGET_PROTEIN ? '#8fa35a' : '#e8d7b8',
     })),
     shop,
-    shopOpen: `${shopOpen} offen`,
+    shopOpen: String(shopOpen),
   }
 
   async function addWater(ml: number) {

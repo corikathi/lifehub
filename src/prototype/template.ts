@@ -34,16 +34,51 @@ function renderConditions(html: string, ctx: Ctx): string {
   return out
 }
 
+// Schleifen: das passende schließende Tag wird über die Verschachtelung gezählt
+function expandLoops(html: string, ctx: Ctx): string {
+  const openRe = /<sc-for list="\{\{ ([\w.]+) \}\}" as="(\w+)"[^>]*>/
+  let out = ''
+  let rest = html
+  let m = openRe.exec(rest)
+  while (m) {
+    const cur: RegExpExecArray = m
+    out += rest.slice(0, cur.index)
+    const bodyStart = cur.index + cur[0].length
+    // Schließendes Tag mit gleicher Verschachtelungstiefe suchen
+    let depth = 1
+    let pos = bodyStart
+    let end = -1
+    while (depth > 0) {
+      const nextOpen = rest.indexOf('<sc-for', pos)
+      const nextClose = rest.indexOf('</sc-for>', pos)
+      if (nextClose < 0) break
+      if (nextOpen >= 0 && nextOpen < nextClose) {
+        depth++
+        pos = nextOpen + 7
+      } else {
+        depth--
+        if (depth === 0) end = nextClose
+        pos = nextClose + 9
+      }
+    }
+    if (end < 0) {
+      out += rest.slice(cur.index)
+      return out
+    }
+    const body = rest.slice(bodyStart, end)
+    const items = lookup(ctx, cur[1])
+    if (Array.isArray(items)) {
+      out += items.map((item) => renderTemplate(body, { ...ctx, [cur[2]]: item })).join('')
+    }
+    rest = rest.slice(end + '</sc-for>'.length)
+    m = openRe.exec(rest)
+  }
+  return out + rest
+}
+
 export function renderTemplate(html: string, ctx: Ctx): string {
   const withConditions = renderConditions(html, ctx)
-  const withLoops = withConditions.replace(
-    /<sc-for list="\{\{ ([\w.]+) \}\}" as="(\w+)"[^>]*>([\s\S]*?)<\/sc-for>/g,
-    (_m, listPath: string, alias: string, body: string) => {
-      const items = lookup(ctx, listPath)
-      if (!Array.isArray(items)) return ''
-      return items.map((item) => renderTemplate(body, { ...ctx, [alias]: item })).join('')
-    },
-  )
+  const withLoops = expandLoops(withConditions, ctx)
   return withLoops.replace(/\{\{ ([\w.]+) \}\}/g, (_m, path: string) => {
     const value = lookup(ctx, path)
     return value === undefined || value === null ? '' : escapeHtml(String(value))
