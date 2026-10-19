@@ -4,9 +4,15 @@ import { dateKey } from '../lib/dates'
 import { forGrams, lookupBarcode, searchFood, type FoodHit, type NutriEntry } from '../lib/nutrition'
 
 // Lebensmittel-Suche oben im Essen-Tab (wie Yazio): suchen, Barcode scannen oder eintippen.
-// Eigene Lebensmittel werden zuerst gezeigt und lassen sich anlegen, wenn die Datenbank nichts findet.
+// Eigene und zuletzt verwendete Lebensmittel stehen bereit. Pro Lebensmittel gibt es Einheiten
+// wie Scheibe oder Portion, die sich mit Gramm-Angabe speichern lassen.
 type Detector = { detect: (source: HTMLVideoElement) => Promise<{ rawValue: string }[]> }
 type DetectorCtor = new (opts: { formats: string[] }) => Detector
+
+interface Unit {
+  name: string
+  grams: number
+}
 
 function getDetector(): Detector | null {
   const Ctor = (window as unknown as { BarcodeDetector?: DetectorCtor }).BarcodeDetector
@@ -20,12 +26,17 @@ export function Suche() {
   const today = dateKey()
   const [log, setLog] = useKv<Record<string, NutriEntry[]>>('nutriLog', {})
   const [myFoods, setMyFoods] = useKv<FoodHit[]>('myFoods', [])
+  const [recent, setRecent] = useKv<FoodHit[]>('recentFoods', [])
+  const [unitsByFood, setUnitsByFood] = useKv<Record<string, Unit[]>>('foodUnits', {})
   const [goal, setGoal] = useKv<number>('kcalGoal', 2000)
   const [query, setQuery] = useState('')
   const [onlineHits, setOnlineHits] = useState<FoodHit[]>([])
   const [searched, setSearched] = useState(false)
   const [picked, setPicked] = useState<FoodHit | null>(null)
-  const [grams, setGrams] = useState('100')
+  const [unit, setUnit] = useState('g')
+  const [amount, setAmount] = useState('100')
+  const [newUnitName, setNewUnitName] = useState('')
+  const [newUnitGrams, setNewUnitGrams] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [scanning, setScanning] = useState(false)
@@ -35,10 +46,10 @@ export function Suche() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const hasDetector = typeof window !== 'undefined' && !!(window as unknown as { BarcodeDetector?: unknown }).BarcodeDetector
 
-  // Eigene Lebensmittel zuerst, dann die Online-Treffer
   const q = query.trim().toLowerCase()
   const ownHits = q.length >= 2 ? myFoods.filter((f) => f.name.toLowerCase().includes(q)) : []
   const hits = [...ownHits, ...onlineHits]
+  const units: Unit[] = picked ? (unitsByFood[picked.name] ?? []) : []
 
   // Suche mit kurzer Pause
   useEffect(() => {
@@ -85,7 +96,7 @@ export function Suche() {
               setBusy(true)
               const hit = await lookupBarcode(found[0].rawValue)
               setBusy(false)
-              if (hit) setPicked(hit)
+              if (hit) choose(hit)
               else setError('Produkt nicht gefunden. Du kannst den Namen suchen.')
             }
           } catch {
@@ -105,12 +116,20 @@ export function Suche() {
     }
   }, [scanning])
 
+  function choose(hit: FoodHit) {
+    setPicked(hit)
+    setUnit('g')
+    setAmount('100')
+    setNewUnitName('')
+    setNewUnitGrams('')
+  }
+
   async function lookupCode() {
     setError(null)
     setBusy(true)
     try {
       const hit = await lookupBarcode(code)
-      if (hit) setPicked(hit)
+      if (hit) choose(hit)
       else setError('Produkt nicht gefunden.')
     } catch {
       setError('Die Produktsuche ist gerade nicht erreichbar.')
@@ -123,17 +142,37 @@ export function Suche() {
   const kcalEaten = entries.reduce((s, e) => s + e.kcal, 0)
   const kcalLeft = goal - kcalEaten
 
+  // Gramm aus Menge und Einheit berechnen
+  const amountNumber = Number(amount.replace(',', '.')) || 0
+  const unitInfo = units.find((u) => u.name === unit)
+  const gramsNow = unit === 'g' ? amountNumber : amountNumber * (unitInfo?.grams ?? 0)
+
   async function add() {
-    if (!picked) return
-    const g = Number(grams.replace(',', '.'))
-    if (!g) return
-    const entry: NutriEntry = { id: `n-${Date.now()}`, name: picked.name, grams: g, ...forGrams(picked, g) }
+    if (!picked || gramsNow <= 0) return
+    const label = unit === 'g' ? picked.name : `${picked.name} (${amountNumber} ${unit})`
+    const entry: NutriEntry = { id: `n-${Date.now()}`, name: label, grams: Math.round(gramsNow), ...forGrams(picked, gramsNow) }
     await setLog({ ...log, [today]: [...entries, entry] })
+    // Zuletzt verwendet merken, ohne Doppelungen
+    const rest = recent.filter((r) => r.name !== picked.name)
+    await setRecent([picked, ...rest].slice(0, 12))
     setPicked(null)
     setQuery('')
     setOnlineHits([])
     setSearched(false)
     setCode('')
+  }
+
+  async function addUnit() {
+    if (!picked) return
+    const grams = Number(newUnitGrams.replace(',', '.')) || 0
+    const name = newUnitName.trim()
+    if (!name || grams <= 0) return
+    const list = [...units.filter((u) => u.name !== name), { name, grams }]
+    await setUnitsByFood({ ...unitsByFood, [picked.name]: list })
+    setUnit(name)
+    setAmount('1')
+    setNewUnitName('')
+    setNewUnitGrams('')
   }
 
   async function remove(id: string) {
@@ -152,11 +191,15 @@ export function Suche() {
       carbs: Number(own.carbs.replace(',', '.')) || 0,
       fat: Number(own.fat.replace(',', '.')) || 0,
     }
-    await setMyFoods([...myFoods, food])
-    setPicked(food)
+    await setMyFoods([...myFoods.filter((f) => f.name !== name), food])
     setCreating(false)
     setOwn(EMPTY_OWN)
+    choose(food)
   }
+
+  // Auswahl ohne Suche: eigene und zuletzt verwendete Lebensmittel
+  const showQuickList = query.trim().length < 2 && !picked
+  const quickRecent = recent.filter((r) => !myFoods.some((m) => m.name === r.name))
 
   return (
     <div className="stack">
@@ -192,9 +235,37 @@ export function Suche() {
           </div>
         )}
 
+        {showQuickList && myFoods.length > 0 && (
+          <>
+            <div className="section-title" style={{ margin: 0 }}>Meine Lebensmittel</div>
+            <div className="stack" style={{ gap: 6 }}>
+              {myFoods.map((h, i) => (
+                <button key={`my-${h.name}-${i}`} type="button" className="recipe-row" onClick={() => choose(h)}>
+                  <span className="grow">{h.name}</span>
+                  <span className="muted" style={{ fontSize: 12 }}>{h.kcal} kcal / 100 g</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {showQuickList && quickRecent.length > 0 && (
+          <>
+            <div className="section-title" style={{ margin: 0 }}>Zuletzt verwendet</div>
+            <div className="stack" style={{ gap: 6 }}>
+              {quickRecent.map((h, i) => (
+                <button key={`rec-${h.name}-${i}`} type="button" className="recipe-row" onClick={() => choose(h)}>
+                  <span className="grow">{h.name}</span>
+                  <span className="muted" style={{ fontSize: 12 }}>{h.kcal} kcal / 100 g</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
         {!picked &&
           hits.map((h, i) => (
-            <button key={`${h.name}-${i}`} type="button" className="btn" style={{ textAlign: 'left' }} onClick={() => setPicked(h)}>
+            <button key={`${h.name}-${i}`} type="button" className="btn" style={{ textAlign: 'left' }} onClick={() => choose(h)}>
               <span style={{ fontWeight: 700 }}>{h.name}</span>
               <span className="muted" style={{ display: 'block', fontSize: 12 }}>{h.brand} · {h.kcal} kcal / 100 g</span>
             </button>
@@ -239,12 +310,29 @@ export function Suche() {
             }}
           >
             <p style={{ fontWeight: 700, margin: 0 }}>{picked.name}</p>
-            <div className="row">
-              <input className="input" inputMode="decimal" value={grams} onChange={(e) => setGrams(e.target.value)} aria-label="Menge in Gramm" />
-              <span>g</span>
+            <div className="chips">
+              <button type="button" className={`chip ${unit === 'g' ? 'active' : ''}`} onClick={() => { setUnit('g'); setAmount('100') }}>Gramm</button>
+              {units.map((u) => (
+                <button key={u.name} type="button" className={`chip ${unit === u.name ? 'active' : ''}`} onClick={() => { setUnit(u.name); setAmount('1') }}>
+                  {u.name} ({u.grams} g)
+                </button>
+              ))}
             </div>
-            <p className="muted" style={{ margin: 0 }}>{forGrams(picked, Number(grams.replace(',', '.')) || 0).kcal} kcal</p>
-            <button className="btn primary" type="submit">Eintragen</button>
+            <div className="row">
+              <input className="input" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Menge" />
+              <span>{unit === 'g' ? 'g' : unit}</span>
+            </div>
+            <p className="muted" style={{ margin: 0 }}>
+              {gramsNow > 0 ? `${Math.round(gramsNow)} g · ${forGrams(picked, gramsNow).kcal} kcal` : 'Menge eingeben'}
+            </p>
+            <button className="btn primary" type="submit" disabled={gramsNow <= 0}>Eintragen</button>
+
+            <div className="section-title" style={{ margin: 0 }}>Neue Einheit, z. B. Scheibe oder Portion</div>
+            <div className="ingredient-row" style={{ gridTemplateColumns: '1fr 1fr auto' }}>
+              <input className="input" placeholder="Name, z. B. Scheibe" value={newUnitName} onChange={(e) => setNewUnitName(e.target.value)} aria-label="Einheitenname" />
+              <input className="input" inputMode="decimal" placeholder="Gramm" value={newUnitGrams} onChange={(e) => setNewUnitGrams(e.target.value)} aria-label="Gramm pro Einheit" />
+              <button type="button" className="btn small" onClick={addUnit} disabled={!newUnitName.trim() || !(Number(newUnitGrams.replace(',', '.')) > 0)}>Speichern</button>
+            </div>
           </form>
         )}
         <p className="muted" style={{ fontSize: 11, margin: 0 }}>Daten: Open Food Facts (ODbL). Werte können abweichen.</p>
