@@ -30,6 +30,7 @@ export interface SetRow {
 interface WeekPlan {
   plan: string[] // Eintrag pro Wochentag, z. B. "Kraft A" oder "Pause"
   done: boolean[]
+  skipped?: Record<number, string> // Ausgefallene Tage mit Grund, z. B. "4 Stunden geschlafen"
 }
 
 interface WorkoutDraft {
@@ -131,6 +132,17 @@ function WeekPlanView({ content, onStart }: { content: TrainingFile; onStart: (u
     save({ ...week, done })
   }
 
+  // Ein Tag darf ausfallen, z. B. wenn man nur wenig geschlafen hat. Der Grund bleibt sichtbar.
+  function skipDay(i: number, reason: string) {
+    save({ ...week, skipped: { ...(week.skipped ?? {}), [i]: reason || 'ausgelassen' } })
+  }
+
+  function unskipDay(i: number) {
+    const rest = { ...(week.skipped ?? {}) }
+    delete rest[i]
+    save({ ...week, skipped: rest })
+  }
+
   const isStrength = (label: string) => label.startsWith('Kraft')
   const consecutive = week.plan.some((label, i) => i < 6 && isStrength(label) && isStrength(week.plan[i + 1]))
 
@@ -146,21 +158,28 @@ function WeekPlanView({ content, onStart }: { content: TrainingFile; onStart: (u
 
       {days.map((d, i) => {
         const label = week.plan[i]
+        const reason = week.skipped?.[i]
+        const skipped = reason !== undefined
         return (
-          <div key={d} className={`card day-card ${i === todayIndex ? 'today-card' : ''}`}>
+          <div key={d} className={`card day-card ${i === todayIndex ? 'today-card' : ''} ${skipped ? 'skipped' : ''}`}>
             <div className="row between">
               <label className="check-row" style={{ margin: 0 }}>
-                <input type="checkbox" checked={week.done[i]} onChange={() => toggleDone(i)} />
+                <input type="checkbox" checked={week.done[i]} onChange={() => toggleDone(i)} disabled={skipped} />
                 <span className={week.done[i] ? 'done-text' : ''}>
-                  <strong>{DAYS[i]}</strong> · {label}
+                  <strong>{DAYS[i]}</strong> · {skipped ? 'ausgefallen' : label}
                 </span>
               </label>
-              {isStrength(label) && (
+              {isStrength(label) && !skipped && (
                 <button type="button" className="btn small primary" onClick={() => onStart(label)}>Start</button>
               )}
             </div>
+            {skipped && (
+              <p className="muted" style={{ margin: '6px 0 0' }}>
+                Geplant war {label}. Grund: {reason}
+              </p>
+            )}
             <details style={{ marginTop: 8 }}>
-              <summary className="muted">Verschieben</summary>
+              <summary className="muted">Verschieben oder ausfallen lassen</summary>
               <select
                 className="select"
                 style={{ marginTop: 8 }}
@@ -172,11 +191,35 @@ function WeekPlanView({ content, onStart }: { content: TrainingFile; onStart: (u
                 <option value="">Tauschen mit…</option>
                 {DAYS.map((name, j) => (j !== i ? <option key={name} value={j}>{name}</option> : null))}
               </select>
+              {skipped ? (
+                <button type="button" className="btn small" style={{ marginTop: 8 }} onClick={() => unskipDay(i)}>Doch trainieren</button>
+              ) : (
+                <SkipForm onSkip={(text) => skipDay(i, text)} />
+              )}
             </details>
           </div>
         )
       })}
     </div>
+  )
+}
+
+// Grund eingeben und den Tag ausfallen lassen. Der Grund ist optional.
+function SkipForm({ onSkip }: { onSkip: (reason: string) => void }) {
+  const [reason, setReason] = useState('')
+  return (
+    <form
+      className="row"
+      style={{ marginTop: 8 }}
+      onSubmit={(e) => {
+        e.preventDefault()
+        onSkip(reason.trim())
+        setReason('')
+      }}
+    >
+      <input className="input" placeholder="Grund, z. B. 4 Stunden geschlafen" value={reason} onChange={(e) => setReason(e.target.value)} aria-label="Grund für das Ausfallen" />
+      <button type="submit" className="btn small">Ausfallen lassen</button>
+    </form>
   )
 }
 

@@ -18,8 +18,6 @@ import { PrototypeScreen } from './components/PrototypeScreen'
 import { NAV } from './prototype/nav'
 import { SHEET } from './prototype/sheet'
 import type { Todo } from './lib/todos'
-import type { Rezept } from './lib/content'
-import { parseRecipeText } from './lib/recipeText'
 import { readKv, writeKv } from './lib/store'
 import { DEFAULT_BUDGET, normalizeBudget } from './lib/budget'
 import { dateKey } from './lib/dates'
@@ -28,7 +26,7 @@ type Tab = 'today' | 'calendar' | 'food' | 'training' | 'money' | 'more'
 
 const ACTIVE = '#5d6b3d'
 const IDLE = '#a8957c'
-const KINDS = ['To-do', 'Termin', 'Ausgabe', 'Einkauf', 'Gewohnheit', 'Rezept']
+const KINDS = ['To-do', 'Termin', 'Ausgabe', 'Einkauf', 'Gewohnheit']
 // Festes Sheet am Bildschirm, über der unteren Leiste
 const SHEET_STYLE: CSSProperties = {
   position: 'fixed',
@@ -41,7 +39,6 @@ const SHEET_STYLE: CSSProperties = {
   zIndex: 30,
 }
 const PLACEHOLDER: Record<string, string> = {
-  Rezept: 'Rezepttext hier einfügen: Titel, Zutaten, Zubereitung',
   'To-do': 'Was steht an?',
   Termin: 'z. B. Friseur',
   Ausgabe: 'z. B. Bäcker',
@@ -148,31 +145,6 @@ function App() {
     const title = sheet.draft.trim()
     if (!title) return
     const today = dateKey()
-    if (sheet.kind === 'Rezept') {
-      // Gleicher Parser wie im Mehr-Tab: ein oder mehrere Rezepte aus dem eingefügten Text
-      const parsed = parseRecipeText(sheet.draft)
-      if (parsed.length === 0) {
-        window.alert('Ich konnte keine Rezepte erkennen. Bitte prüfe, ob Titel und Zutaten im Text stehen.')
-        return
-      }
-      const stamp = Date.now()
-      const current = await readKv<Rezept[]>('myRecipes', [])
-      const neu: Rezept[] = parsed.map((r, i) => ({
-        id: `import-${stamp}-${i}`,
-        titel: r.titel,
-        hinweis: 'Eigenes Rezept',
-        zutaten_fuer_3: r.zutaten.map((z) => ({ name: z.name, menge: z.menge, einheit: z.einheit, kategorie: z.kategorie })),
-        schritte: r.schritte,
-      }))
-      await writeKv('myRecipes', [...current, ...neu])
-      const nutri = await readKv<Record<string, { kcal: number; protein: number; carbs: number; fat: number }>>('recipeNutrition', {})
-      parsed.forEach((r, i) => {
-        if (r.kcal && r.kcal > 0) nutri[neu[i].id] = { kcal: r.kcal, protein: r.protein ?? 0, carbs: r.carbs ?? 0, fat: r.fat ?? 0 }
-      })
-      await writeKv('recipeNutrition', nutri)
-      setSheet((s) => ({ ...s, open: false, draft: '', amount: '' }))
-      return
-    }
     if (sheet.kind === 'Ausgabe') {
       const amount = Number(sheet.amount.replace(',', '.')) || 0
       const budget = normalizeBudget(await readKv<unknown>('budget', DEFAULT_BUDGET))
@@ -254,8 +226,6 @@ function App() {
     })),
     isAusgabe: sheet.kind === 'Ausgabe',
     hasDate: sheet.kind === 'Termin' || sheet.kind === 'To-do',
-    notRezept: sheet.kind !== 'Rezept',
-    isRezept: sheet.kind === 'Rezept',
     draftDate: sheet.date,
     setDate: 'date',
     draftTime: sheet.time,

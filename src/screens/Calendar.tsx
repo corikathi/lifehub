@@ -31,7 +31,7 @@ export function Calendar() {
   const content = useRecipes()
   const [trainingContent] = useKv<TrainingFile | null>('content.training', null)
   const [mealsState] = useKv<{ weeks: Record<string, string[]> }>('meals', { weeks: {} })
-  const [trainingWeeks] = useKv<Record<string, { plan: string[] }>>('trainingWeeks', {})
+  const [trainingWeeks] = useKv<Record<string, { plan: string[]; skipped?: Record<number, string> }>>('trainingWeeks', {})
   const [todos] = useKv<Todo[]>('todos', [])
   // Datierte To-dos erscheinen zusammen mit den Terminen am jeweiligen Tag
   const dayTodos = todos.filter((td) => td.date && todoOn(td, selected) && !td.done)
@@ -41,8 +41,10 @@ export function Calendar() {
     if (slot.startsWith('custom:')) return slot.slice(7)
     return findRecipe(content?.rezepte ?? [], slot)?.titel ?? 'Noch nichts geplant'
   }
-  const trainingFor = (i: number) =>
-    trainingWeeks[monday]?.plan?.[i] ?? trainingContent?.wochenplan_standard[i]?.split(': ')[1] ?? '–'
+  const trainingFor = (i: number) => {
+    if (trainingWeeks[monday]?.skipped?.[i] !== undefined) return 'ausgefallen'
+    return trainingWeeks[monday]?.plan?.[i] ?? trainingContent?.wochenplan_standard[i]?.split(': ')[1] ?? '–'
+  }
 
   const ctx = {
     rangeText: `${formatDay(days[0], { day: 'numeric', month: 'long' })} – ${formatDay(days[6], { day: 'numeric', month: 'long' })}`,
