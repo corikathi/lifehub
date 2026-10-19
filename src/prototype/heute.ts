@@ -28,8 +28,8 @@ export const HEUTE = `<div data-screen-label="Heute" style="display:flex;flex-di
 <div style="display:flex;flex-direction:column;gap:10px">
 <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:20px">Heute erledigen</h2><span style="font-size:13px;color:#8d7459;font-weight:600">{{ taskCount }}</span></div>
 <sc-for list="{{ tasks }}" as="t" hint-placeholder-count="5">
-<button data-act="{{ t.toggle }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;background:#fffaf0;border-radius:20px;padding:12px 14px;cursor:pointer;box-shadow:0 3px 10px rgba(94,60,25,.06)">
-<span style="width:28px;height:28px;flex:none;border-radius:50%;border:2.5px solid #8fa35a;background:{{ t.checkBg }};display:grid;place-items:center;color:#fffaf0;font-weight:800;font-size:14px">{{ t.mark }}</span>
+<button data-act="{{ t.open }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;background:#fffaf0;border-radius:20px;padding:12px 14px;cursor:pointer;box-shadow:0 3px 10px rgba(94,60,25,.06)">
+<span data-act="{{ t.toggle }}" style="width:28px;height:28px;flex:none;border-radius:50%;border:2.5px solid #8fa35a;background:{{ t.checkBg }};display:grid;place-items:center;color:#fffaf0;font-weight:800;font-size:14px">{{ t.mark }}</span>
 <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-weight:700;font-size:15px;text-decoration:{{ t.deco }};color:{{ t.color }}">{{ t.title }}</span><span style="font-size:13px;color:#8d7459">{{ t.meta }}</span></span>
 <span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:{{ t.tagBg }};color:{{ t.tagInk }}">{{ t.tag }}</span>
 </button>

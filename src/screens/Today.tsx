@@ -108,12 +108,12 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     }
   }
   const taskTiles = [
-    { title: todayMeal, meta: 'Mahlzeit heute', tag: 'Essen', toggle: 'task:meal', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(doneOf('meal')) },
-    { title: todayTraining, meta: 'Training', tag: 'Training', toggle: 'task:training', tagBg: '#dce8ea', tagInk: '#3f5a66', ...markOf(doneOf('training')) },
-    ...events.map((ev) => ({ title: ev.title, meta: ev.note ?? 'Termin', tag: ev.time ?? 'ganztägig', toggle: 'task:ev:' + ev.id, tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(doneOf('ev:' + ev.id)) })),
+    { title: todayMeal, meta: 'Mahlzeit heute', tag: 'Essen', toggle: 'task:meal', open: 'nav:essen', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(doneOf('meal')) },
+    { title: todayTraining, meta: 'Training', tag: 'Training', toggle: 'task:training', open: 'nav:training-rad', tagBg: '#dce8ea', tagInk: '#3f5a66', ...markOf(doneOf('training')) },
+    ...events.map((ev) => ({ title: ev.title, meta: ev.note ?? 'Termin', tag: ev.time ?? 'ganztägig', toggle: 'task:ev:' + ev.id, open: 'nav:woche', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(doneOf('ev:' + ev.id)) })),
   ]
 
-  const todoTiles = todos.map((td) => ({ title: td.title, meta: td.meta, tag: td.tag, toggle: 'todo:' + td.id, tagBg: '#e2d2b5', tagInk: '#4a3828', ...markOf(td.done) }))
+  const todoTiles = todos.map((td) => ({ title: td.title, meta: td.meta, tag: td.tag, toggle: 'todo:' + td.id, open: 'noop', tagBg: '#e2d2b5', tagInk: '#4a3828', ...markOf(td.done) }))
   const taskList = [...taskTiles, ...todoTiles]
 
   const glassTiles = Array.from({ length: GLASSES }, (_, i) => ({
@@ -144,6 +144,16 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     else if (action === 'water:undo') void undoWater()
     else if (action === 'mochi:next') setMIdx((i) => i + 1)
     else if (action === 'nav:mehr') onNavigate('more')
+    else if (action === 'nav:essen') onNavigate('food')
+    else if (action === 'nav:woche') onNavigate('calendar')
+    else if (action === 'nav:training-rad') {
+      try {
+        localStorage.setItem('lifehub.trainingSection', 'rad')
+      } catch {
+        // Ohne Speicher öffnet der Tab eben im Plan
+      }
+      onNavigate('training')
+    }
     else if (action.startsWith('task:')) {
       const id = action.slice(5)
       void setTaskDone({ ...taskDone, [today + '|' + id]: !doneOf(id) })

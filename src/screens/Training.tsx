@@ -49,7 +49,16 @@ export interface WorkoutEntry {
 
 export function Training() {
   const [content] = useKv<TrainingFile | null>('content.training', null)
-  const [section, setSection] = useState<Section>('plan')
+  // Abschnitt aus dem Heute-Tab übernehmen (z. B. Rad), danach wieder zurücksetzen
+  const [section, setSection] = useState<Section>(() => {
+    try {
+      const saved = localStorage.getItem('lifehub.trainingSection')
+      localStorage.removeItem('lifehub.trainingSection')
+      return saved === 'rad' ? 'rad' : 'plan'
+    } catch {
+      return 'plan'
+    }
+  })
   const [unit, setUnit] = useState('Kraft A')
 
   if (!content) {
