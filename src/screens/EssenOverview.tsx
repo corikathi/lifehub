@@ -67,6 +67,9 @@ const GRID_END = blockEnd(PART_BOTTOM, GRID_START)
 const PART_BOTTOM_A = PART_BOTTOM.slice(0, GRID_START)
 const PART_BOTTOM_GRID = PART_BOTTOM.slice(GRID_START, GRID_END)
 const PART_BOTTOM_C = PART_BOTTOM.slice(GRID_END)
+const GRID_INNER = PART_BOTTOM_GRID.slice(PART_BOTTOM_GRID.indexOf('>') + 1).trimStart()
+const GEW_CHILD_END = blockEnd(GRID_INNER, 0)
+const KCAL_CARD = GRID_INNER.slice(GEW_CHILD_END).replace(/<\/div>\s*$/, '')
 
 // Ziele für Makros. Der Prototyp hat keine Werte, diese sind Startwerte und lassen sich im Code ändern.
 const TARGET_PROTEIN = 140
@@ -264,8 +267,10 @@ export function EssenOverview() {
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         {PART_BOTTOM_A.trim() && <PrototypeScreen template={PART_BOTTOM_A} ctx={ctx} onAct={handleAct} />}
-        <PrototypeScreen template={PART_BOTTOM_GRID} ctx={ctx} onAct={handleAct} />
-        <WeightEntry />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <WeightEntry />
+          <PrototypeScreen template={KCAL_CARD} ctx={ctx} onAct={handleAct} />
+        </div>
         <PrototypeScreen template={PART_BOTTOM_C} ctx={ctx} onAct={handleAct} />
       </div>
     </>
