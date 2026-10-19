@@ -17,6 +17,7 @@ import { Ruhe } from './screens/Ruhe'
 import { PrototypeScreen } from './components/PrototypeScreen'
 import { NAV } from './prototype/nav'
 import { SHEET } from './prototype/sheet'
+import type { Todo } from './lib/todos'
 import { readKv, writeKv } from './lib/store'
 import { DEFAULT_BUDGET, normalizeBudget } from './lib/budget'
 import { dateKey } from './lib/dates'
@@ -40,6 +41,7 @@ interface SheetState {
   draft: string
   amount: string
   cat: string
+  date: string
   time: string
 }
 
@@ -91,7 +93,7 @@ function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [skipUnlock, setSkipUnlock] = useState(false)
   const [sosOpen, setSosOpen] = useState(false)
-  const [sheet, setSheet] = useState<SheetState>({ open: false, kind: 'To-do', draft: '', amount: '', cat: 'Lebensmittel', time: '18:00' })
+  const [sheet, setSheet] = useState<SheetState>({ open: false, kind: 'To-do', draft: '', amount: '', cat: 'Lebensmittel', date: dateKey(), time: '18:00' })
   // undefined = noch am Laden, false = Daten fehlen noch
   const bundleLoaded = useLiveQuery(async () => !!(await db.kv.get('bundle.v1')), [], undefined)
   const [budgetRaw] = [useLiveQuery(() => readKv<unknown>('budget', DEFAULT_BUDGET), [], DEFAULT_BUDGET)]
@@ -142,14 +144,15 @@ function App() {
     } else if (sheet.kind === 'Gewohnheit') {
       await db.habits.add({ name: title, createdAt: Date.now() })
     } else if (sheet.kind === 'Termin') {
-      await db.events.add({ date: today, title, time: sheet.time || undefined })
+      await db.events.add({ date: sheet.date || today, title, time: sheet.time || undefined })
     } else {
-      // To-do und Einkauf landen in der Liste „Heute erledigen“
-      const todos = await readKv<{ id: string; title: string; meta: string; tag: string; done: boolean }[]>('todos', [])
+      // To-do und Einkauf landen in der Liste „Heute erledigen“, To-dos können einen Termin bekommen
+      const todos = await readKv<Todo[]>('todos', [])
       const isShop = sheet.kind === 'Einkauf'
+      const dated = !isShop && sheet.date ? { date: sheet.date, time: sheet.time || undefined } : {}
       await writeKv('todos', [
         ...todos,
-        { id: `t-${Date.now()}`, title: isShop ? `${title} kaufen` : title, meta: isShop ? 'Einkauf' : 'To-do', tag: isShop ? 'Einkauf' : 'To-do', done: false },
+        { id: `t-${Date.now()}`, title: isShop ? `${title} kaufen` : title, meta: isShop ? 'Einkauf' : 'To-do', tag: isShop ? 'Einkauf' : 'To-do', done: false, ...dated },
       ])
     }
     setSheet((s) => ({ ...s, open: false, draft: '', amount: '' }))
@@ -171,6 +174,7 @@ function App() {
     if (key === 'draft') setSheet((s) => ({ ...s, draft: value }))
     else if (key === 'amount') setSheet((s) => ({ ...s, amount: value }))
     else if (key === 'time') setSheet((s) => ({ ...s, time: value }))
+    else if (key === 'date') setSheet((s) => ({ ...s, date: value }))
   }
 
   const navCtx = {
@@ -210,7 +214,9 @@ function App() {
       pick: `cat:${c.name}`,
     })),
     isAusgabe: sheet.kind === 'Ausgabe',
-    isTermin: sheet.kind === 'Termin',
+    hasDate: sheet.kind === 'Termin' || sheet.kind === 'To-do',
+    draftDate: sheet.date,
+    setDate: 'date',
     draftTime: sheet.time,
     setTime: 'time',
     addItem: 'add',

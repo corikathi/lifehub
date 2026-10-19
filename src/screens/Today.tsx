@@ -7,6 +7,11 @@ import { addDays, dateKey, formatDay, greeting, streakOf, weekDays } from '../li
 import { HEUTE } from '../prototype/heute'
 import { PrototypeScreen } from '../components/PrototypeScreen'
 import { defaultSlot, findRecipe, type TrainingFile } from '../lib/content'
+import type { Todo } from '../lib/todos'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { Cat } from '../components/Cat'
+
+const REACTIONS = ['Miau!', 'Schnurr… das tut gut.', 'Schön, dass du da bist.', 'Kraul mich weiter, ich mag das.']
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'money' | 'more'
 
@@ -19,11 +24,15 @@ const DAY_LETTERS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => void; onOpenSos: () => void }) {
   const [today] = useState(() => dateKey())
   const [mIdx, setMIdx] = useState(0)
+  // Mochi reagiert kurz auf Berührung und hat einen einstellbaren Namen
+  const [reacting, setReacting] = useState(false)
+  const [reactIdx, setReactIdx] = useState(0)
+  const [mochiName, setMochiName] = useKv<string>('mochiName', 'Mochi')
 
   const habits = useLiveQuery(() => db.habits.toArray(), [], [])
   const logs = useLiveQuery(() => db.habitLogs.toArray(), [], [])
   const events = useLiveQuery(() => db.events.where('date').equals(today).sortBy('time'), [today], [])
-  const [todos, setTodos] = useKv<{ id: string; title: string; meta: string; tag: string; done: boolean }[]>('todos', [])
+  const [todos, setTodos] = useKv<Todo[]>('todos', [])
   const [taskDone, setTaskDone] = useKv<Record<string, boolean>>('taskDone', {})
   const doneOf = (id: string) => !!taskDone[today + '|' + id]
   const [drinks, setDrinks] = useKv<Record<string, { ml: number; t: string; ts: number }[]>>('drinks', {})
@@ -113,7 +122,8 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     ...events.map((ev) => ({ title: ev.title, meta: ev.note ?? 'Termin', tag: ev.time ?? 'ganztägig', toggle: 'task:ev:' + ev.id, open: 'nav:woche', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(doneOf('ev:' + ev.id)) })),
   ]
 
-  const todoTiles = todos.map((td) => ({ title: td.title, meta: td.meta, tag: td.tag, toggle: 'todo:' + td.id, open: 'noop', tagBg: '#e2d2b5', tagInk: '#4a3828', ...markOf(td.done) }))
+  // Datierte To-dos für später bleiben im Wochen-Tab, hier stehen nur heute und frühere
+  const todoTiles = todos.filter((td) => !td.date || td.date <= today).map((td) => ({ title: td.title, meta: td.meta, tag: td.tag, toggle: 'todo:' + td.id, open: 'noop', tagBg: '#e2d2b5', tagInk: '#4a3828', ...markOf(td.done) }))
   const taskList = [...taskTiles, ...todoTiles]
 
   const glassTiles = Array.from({ length: GLASSES }, (_, i) => ({
@@ -131,7 +141,14 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     tasks: taskList,
     glasses: glassTiles,
     waterText: `${(water / 1000).toFixed(1)} / ${GOAL_LITERS} L`,
-    mascotMsg: mochiMessages[mIdx % mochiMessages.length],
+    mascotMsg: reacting ? REACTIONS[reactIdx % REACTIONS.length] : mochiMessages[mIdx % mochiMessages.length],
+    mascotName: mochiName,
+    renameMochi: 'mochi:rename',
+    catSvg: renderToStaticMarkup(
+      <svg viewBox="-42 -34 84 64" className={reacting ? 'mochi-cat mochi-react' : 'mochi-cat'} style={{ width: 92, height: 'auto', flex: 'none', display: 'block' }} aria-hidden="true">
+        <Cat x={0} y={0} happy={reacting} />
+      </svg>,
+    ),
     nextMsg: 'mochi:next',
   }
 
@@ -142,7 +159,16 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     else if (action === 'water:250') void addWater(250)
     else if (action === 'water:500') void addWater(500)
     else if (action === 'water:undo') void undoWater()
-    else if (action === 'mochi:next') setMIdx((i) => i + 1)
+    else if (action === 'mochi:next') {
+      // Berührung: kurze Reaktion, danach wieder die normalen Nachrichten
+      setReacting(true)
+      setReactIdx((i) => i + 1)
+      setMIdx((i) => i + 1)
+      setTimeout(() => setReacting(false), 2500)
+    } else if (action === 'mochi:rename') {
+      const next = window.prompt('Wie soll deine Katze heißen?', mochiName)?.trim()
+      if (next) void setMochiName(next)
+    }
     else if (action === 'nav:mehr') onNavigate('more')
     else if (action === 'nav:essen') onNavigate('food')
     else if (action === 'nav:woche') onNavigate('calendar')

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { todoOn, type Todo } from '../lib/todos'
 import { db } from '../db'
 import { useKv } from '../lib/store'
 import { useRecipes } from '../lib/recipes'
@@ -31,6 +32,9 @@ export function Calendar() {
   const [trainingContent] = useKv<TrainingFile | null>('content.training', null)
   const [mealsState] = useKv<{ weeks: Record<string, string[]> }>('meals', { weeks: {} })
   const [trainingWeeks] = useKv<Record<string, { plan: string[] }>>('trainingWeeks', {})
+  const [todos] = useKv<Todo[]>('todos', [])
+  // Datierte To-dos erscheinen zusammen mit den Terminen am jeweiligen Tag
+  const dayTodos = todos.filter((td) => td.date && todoOn(td, selected) && !td.done)
 
   const mealFor = (i: number) => {
     const slot = mealsState.weeks[monday]?.[i] ?? defaultSlot(monday, i)
@@ -45,7 +49,7 @@ export function Calendar() {
     selDayName: formatDay(selected, { weekday: 'long', day: 'numeric', month: 'long' }),
     days: days.map((d, i) => {
       const isSel = d === selected
-      const hasEvents = weekEvents.some((e) => e.date === d)
+      const hasEvents = weekEvents.some((e) => e.date === d) || todos.some((td) => !td.done && todoOn(td, d))
       return {
         label: DAY_LETTERS[i],
         date: Number(d.slice(8)),
@@ -55,13 +59,22 @@ export function Calendar() {
         go: `day:${d}`,
       }
     }),
-    events: events.map((ev) => ({
-      time: ev.time ?? 'ganzt.',
-      title: ev.title,
-      sub: ev.note ?? '',
-      bg: '#f7e2b5',
-      ink: '#6b4a1e',
-    })),
+    events: [
+      ...events.map((ev) => ({
+        time: ev.time ?? 'ganzt.',
+        title: ev.title,
+        sub: ev.note ?? '',
+        bg: '#f7e2b5',
+        ink: '#6b4a1e',
+      })),
+      ...dayTodos.map((td) => ({
+        time: td.time ?? 'ganzt.',
+        title: td.title,
+        sub: td.meta,
+        bg: '#e2d2b5',
+        ink: '#4a3828',
+      })),
+    ].sort((a, b) => (a.time === 'ganzt.' ? -1 : b.time === 'ganzt.' ? 1 : a.time.localeCompare(b.time))),
     plan: DAY_LETTERS.map((label, i) => ({
       day: label,
       dayInk: i === days.indexOf(today) ? '#5d6b3d' : '#4a3828',

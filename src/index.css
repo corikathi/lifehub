@@ -1437,6 +1437,17 @@ textarea {
   align-items: center;
 }
 
+/* Mochi hüpft kurz, wenn man sie antippt */
+@keyframes mochi-wiggle {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(-4deg) translateY(-4px); }
+  50% { transform: rotate(3deg) translateY(0); }
+  75% { transform: rotate(-2deg) translateY(-2px); }
+}
+.mochi-react {
+  animation: mochi-wiggle 0.9s ease-in-out;
+}
+
 /* ---------- Mochi im Stil des Prototyps ---------- */
 
 .mochi-row {

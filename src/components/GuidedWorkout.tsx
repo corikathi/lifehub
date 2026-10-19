@@ -208,11 +208,43 @@ export function GuidedWorkout({ training }: { training: TrainingFile }) {
     )
   }
 
+  // Verlauf: das beste Gewicht jeder Übung aus den letzten Einheiten, älteste zuerst
+  const history = (name: string): number[] =>
+    log
+      .map((entry) => Math.max(0, ...(entry.exercises?.[name] ?? []).map((s) => s.w)))
+      .filter((w) => w > 0)
+      .slice(-8)
+
   return (
     <div className="card workout-idle">
       <p style={{ fontWeight: 700, margin: 0 }}>{unit}</p>
       <p className="muted" style={{ margin: '4px 0 10px' }}>{exercises.length} Übungen · geführt, mit Pause zwischen den Sätzen</p>
       <button type="button" className="btn primary" onClick={start}>Kraft-Training starten</button>
+
+      {log.length > 0 && (
+        <div className="stack" style={{ gap: 10, marginTop: 14 }}>
+          <p className="section-title" style={{ margin: 0 }}>Gewicht pro Übung</p>
+          {exercises.map((ex) => {
+            const points = history(ex.name)
+            if (points.length === 0) return null
+            const max = Math.max(...points)
+            const min = Math.min(...points)
+            const span = max - min || 1
+            const coords = points
+              .map((w, i) => `${points.length === 1 ? 50 : (i / (points.length - 1)) * 100},${28 - ((w - min) / span) * 24}`)
+              .join(' ')
+            return (
+              <div key={ex.name} className="row between" style={{ gap: 10 }}>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{ex.name}</span>
+                <span className="muted" style={{ fontSize: 13 }}>{points[points.length - 1]} kg</span>
+                <svg viewBox="0 0 100 30" style={{ width: 90, height: 28, flex: 'none' }} aria-label={`Verlauf ${ex.name}`}>
+                  <polyline points={coords} fill="none" stroke="#8fa35a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

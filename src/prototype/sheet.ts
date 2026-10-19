@@ -16,8 +16,8 @@ export const SHEET = `<sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ fa
 <sc-for list="{{ catChips }}" as="cc" hint-placeholder-count="6"><button data-act="{{ cc.pick }}" style="border:none;border-radius:99px;padding:7px 12px;font-weight:700;font-size:13px;cursor:pointer;background:{{ cc.bg }};color:{{ cc.ink }}">{{ cc.name }}</button></sc-for>
 </div>
 </sc-if>
-<sc-if value="{{ isTermin }}" hint-placeholder-val="{{ false }}">
-<div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;font-size:14px;color:#6b5340">Heute um</span><input type="time" value="{{ draftTime }}" data-change="{{ setTime }}" style="height:46px;border:1.5px solid #ecdcc0;border-radius:14px;background:#f9f1e2;padding:0 12px;font-size:16px;outline:none"></div>
+<sc-if value="{{ hasDate }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-weight:700;font-size:14px;color:#6b5340">Am</span><input type="date" value="{{ draftDate }}" data-change="{{ setDate }}" style="height:46px;border:1.5px solid #ecdcc0;border-radius:14px;background:#f9f1e2;padding:0 12px;font-size:16px;outline:none"><span style="font-weight:700;font-size:14px;color:#6b5340">um</span><input type="time" value="{{ draftTime }}" data-change="{{ setTime }}" style="height:46px;border:1.5px solid #ecdcc0;border-radius:14px;background:#f9f1e2;padding:0 12px;font-size:16px;outline:none"></div>
 </sc-if>
 <button data-act="{{ addItem }}" style="height:52px;border:none;border-radius:99px;background:#e8b04a;font-weight:800;font-size:16px;cursor:pointer">Hinzufügen</button>
 </div>

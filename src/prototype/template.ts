@@ -79,7 +79,12 @@ function expandLoops(html: string, ctx: Ctx): string {
 export function renderTemplate(html: string, ctx: Ctx): string {
   const withConditions = renderConditions(html, ctx)
   const withLoops = expandLoops(withConditions, ctx)
-  return withLoops.replace(/\{\{ ([\w.]+) \}\}/g, (_m, path: string) => {
+  // {{{ pfad }}} fügt fertiges HTML (z. B. ein SVG) unverändert ein
+  const withRaw = withLoops.replace(/\{\{\{ ([\w.]+) \}\}\}/g, (_m, path: string) => {
+    const value = lookup(ctx, path)
+    return value === undefined || value === null ? '' : String(value)
+  })
+  return withRaw.replace(/\{\{ ([\w.]+) \}\}/g, (_m, path: string) => {
     const value = lookup(ctx, path)
     return value === undefined || value === null ? '' : escapeHtml(String(value))
   })
