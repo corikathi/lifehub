@@ -66,6 +66,8 @@ export function RecipeForm() {
   // Gespeicherte Werte zurück ins Formular holen (Basis sind 3 Personen wie gespeichert)
   function startEdit(rezept: Rezept) {
     setEditingId(rezept.id)
+    const n = nutri[rezept.id]
+    setManual(n ? { kcal: String(n.kcal), protein: String(n.protein), carbs: String(n.carbs), fat: String(n.fat) } : { kcal: '', protein: '', carbs: '', fat: '' })
     setTitle(rezept.titel)
     setPersons('3')
     setRows(rezept.zutaten_fuer_3.map((z) => ({ name: z.name, menge: String(z.menge), einheit: z.einheit, kategorie: z.kategorie })))
