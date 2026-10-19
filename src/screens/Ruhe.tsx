@@ -147,27 +147,6 @@ export function Ruhe({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="card">
-            <p style={{ fontWeight: 700, margin: 0 }}>Wenn du jemanden brauchst</p>
-            <div className="stack" style={{ gap: 8, marginTop: 10 }}>
-              <a className="ruhe-call" href="tel:08001110111">
-                <span>
-                  <span style={{ fontWeight: 700 }}>Telefonseelsorge</span>
-                  <span className="muted" style={{ display: 'block' }}>kostenlos, rund um die Uhr</span>
-                </span>
-                <span>0800 111 0 111</span>
-              </a>
-              <a className="ruhe-call" href="tel:112">
-                <span style={{ fontWeight: 700 }}>Notruf</span>
-                <span>112</span>
-              </a>
-              <a className="ruhe-call" href="tel:116123">
-                <span style={{ fontWeight: 700 }}>Seelische Gesundheit</span>
-                <span>116 123</span>
-              </a>
-            </div>
-          </div>
-
-          <div className="card">
             <p style={{ fontWeight: 700, margin: 0 }}>Meine Kontakte</p>
             {contacts.length === 0 && <p className="empty">Trag eine Person ein, die du in so einem Moment anrufen kannst.</p>}
             {contacts.map((c, i) => (

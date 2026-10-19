@@ -2,7 +2,7 @@ import { useKv } from '../lib/store'
 import { dateKey } from '../lib/dates'
 
 // Fester Abendablauf: hilft, den Abend nicht im Chaos enden zu lassen.
-const STEPS = [
+export const STEPS = [
   'Küche aufräumen und Licht dimmen',
   'Geplanten Abendsnack essen, z. B. Quark oder Joghurt mit Protein',
   'Ein Glas Wasser oder Tee',
