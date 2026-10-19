@@ -23,6 +23,8 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   const logs = useLiveQuery(() => db.habitLogs.toArray(), [], [])
   const events = useLiveQuery(() => db.events.where('date').equals(today).sortBy('time'), [today], [])
   const [todos, setTodos] = useKv<{ id: string; title: string; meta: string; tag: string; done: boolean }[]>('todos', [])
+  const [taskDone, setTaskDone] = useKv<Record<string, boolean>>('taskDone', {})
+  const doneOf = (id: string) => !!taskDone[today + '|' + id]
   const [drinks, setDrinks] = useKv<Record<string, { ml: number; t: string; ts: number }[]>>('drinks', {})
   const [content] = useKv<RezepteFile | null>('content.rezepte', null)
   const [trainingContent] = useKv<TrainingFile | null>('content.training', null)
@@ -112,9 +114,9 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     }
   }
   const taskTiles = [
-    { title: todayMeal, meta: 'Mahlzeit heute', tag: 'Essen', toggle: 'noop', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(false) },
-    { title: todayTraining, meta: 'Training', tag: 'Training', toggle: 'noop', tagBg: '#dce8ea', tagInk: '#3f5a66', ...markOf(false) },
-    ...events.map((ev) => ({ title: ev.title, meta: ev.note ?? 'Termin', tag: ev.time ?? 'ganztägig', toggle: 'noop', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(false) })),
+    { title: todayMeal, meta: 'Mahlzeit heute', tag: 'Essen', toggle: 'task:meal', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(doneOf('meal')) },
+    { title: todayTraining, meta: 'Training', tag: 'Training', toggle: 'task:training', tagBg: '#dce8ea', tagInk: '#3f5a66', ...markOf(doneOf('training')) },
+    ...events.map((ev) => ({ title: ev.title, meta: ev.note ?? 'Termin', tag: ev.time ?? 'ganztägig', toggle: 'task:ev:' + ev.id, tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(doneOf('ev:' + ev.id)) })),
   ]
 
   const todoTiles = todos.map((td) => ({ title: td.title, meta: td.meta, tag: td.tag, toggle: 'todo:' + td.id, tagBg: '#e2d2b5', tagInk: '#4a3828', ...markOf(td.done) }))
@@ -148,6 +150,10 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     else if (action === 'water:undo') void undoWater()
     else if (action === 'mochi:next') setMIdx((i) => i + 1)
     else if (action === 'nav:mehr') onNavigate('more')
+    else if (action.startsWith('task:')) {
+      const id = action.slice(5)
+      void setTaskDone({ ...taskDone, [today + '|' + id]: !doneOf(id) })
+    }
     else if (action.startsWith('todo:')) {
       const id = action.slice(5)
       void setTodos(todos.map((td) => (td.id === id ? { ...td, done: !td.done } : td)))
