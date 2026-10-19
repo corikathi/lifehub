@@ -109,7 +109,7 @@ export function Food() {
 
       {view === 'hunger' && <Hunger />}
       {view === 'shopping' && content && (
-        <ShoppingList content={content} slots={[0, 1, 2, 3, 4, 5, 6].map(slotFor)} persons={meals.persons} monday={weekStart} />
+        <ShoppingList content={content} slots={[0, 1, 2, 3, 4, 5, 6].map((i) => (skipped.includes(i) ? '' : slotFor(i)))} persons={meals.persons} monday={weekStart} />
       )}
 
       {view === 'plan' && <RecipeForm />}
