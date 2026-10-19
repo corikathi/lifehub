@@ -1,4 +1,4 @@
-import { useMemo, type ChangeEvent, type MouseEvent } from 'react'
+import { useMemo, type ChangeEvent, type CSSProperties, type MouseEvent } from 'react'
 import { renderTemplate } from '../prototype/template'
 
 // Zeigt eine Prototyp-Vorlage mit unseren Daten. Klicks auf Elemente mit data-act
@@ -8,11 +8,13 @@ export function PrototypeScreen({
   ctx,
   onAct,
   onChange,
+  style,
 }: {
   template: string
   ctx: Record<string, unknown>
   onAct?: (action: string) => void
   onChange?: (key: string, value: string) => void
+  style?: CSSProperties
 }) {
   const html = useMemo(() => renderTemplate(template, ctx), [template, ctx])
 
@@ -27,5 +29,5 @@ export function PrototypeScreen({
     if (key && onChange) onChange(key, el.value)
   }
 
-  return <div onClick={handleClick} onChange={handleChange} dangerouslySetInnerHTML={{ __html: html }} />
+  return <div style={style} onClick={handleClick} onChange={handleChange} dangerouslySetInnerHTML={{ __html: html }} />
 }

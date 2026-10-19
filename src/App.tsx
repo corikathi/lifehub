@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import type { CSSProperties } from 'react'
 import { Today } from './screens/Today'
 import { Calendar } from './screens/Calendar'
 import { Food } from './screens/Food'
@@ -39,6 +40,23 @@ interface SheetState {
   amount: string
   cat: string
   time: string
+}
+
+// Container der unteren Leiste aus dem Prototyp (am Telefonrahmen ausgerichtet)
+const NAV_STYLE: CSSProperties = {
+  position: 'fixed',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  bottom: 0,
+  width: '100%',
+  maxWidth: 560,
+  padding: '8px 8px 22px',
+  background: '#fffaf0',
+  borderTop: '1px solid #ecdcc0',
+  display: 'grid',
+  gridTemplateColumns: 'repeat(6, 1fr)',
+  alignItems: 'end',
+  zIndex: 10,
 }
 
 const NAV_TABS: Record<string, Tab> = {
@@ -191,7 +209,7 @@ function App() {
         {tab === 'more' && <More email={session.user.email} />}
       </main>
 
-      <PrototypeScreen template={NAV} ctx={navCtx} onAct={handleNav} />
+      <PrototypeScreen template={NAV} ctx={navCtx} onAct={handleNav} style={NAV_STYLE} />
       <PrototypeScreen template={SHEET} ctx={sheetCtx} onAct={handleSheet} onChange={handleSheetChange} />
     </div>
   )
