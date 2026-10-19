@@ -24,6 +24,7 @@ export function RecipeForm() {
   const [steps, setSteps] = useState('')
   const [nutri, setNutri] = useKv<Record<string, { kcal: number; protein: number; carbs: number; fat: number }>>('recipeNutrition', {})
   const [manual, setManual] = useState({ kcal: '', protein: '', carbs: '', fat: '' })
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   function updateRow(i: number, patch: Partial<Row>) {
     setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)))
@@ -47,7 +48,9 @@ export function RecipeForm() {
       zutaten_fuer_3: zutaten,
       schritte: steps.split('\n').map((s) => s.trim()).filter(Boolean),
     }
-    await setMine([...mine, rezept])
+    if (editingId) rezept.id = editingId
+    await setMine(editingId ? mine.map((x) => (x.id === editingId ? rezept : x)) : [...mine, rezept])
+    setEditingId(null)
     const num = (v: string) => Number(v.replace(',', '.')) || 0
     if (num(manual.kcal) > 0) {
       await setNutri({ ...nutri, [rezept.id]: { kcal: num(manual.kcal), protein: num(manual.protein), carbs: num(manual.carbs), fat: num(manual.fat) } })
@@ -58,6 +61,16 @@ export function RecipeForm() {
     setRows([{ ...EMPTY_ROW }])
     setSteps('')
     setOpen(false)
+  }
+
+  // Gespeicherte Werte zurück ins Formular holen (Basis sind 3 Personen wie gespeichert)
+  function startEdit(rezept: Rezept) {
+    setEditingId(rezept.id)
+    setTitle(rezept.titel)
+    setPersons('3')
+    setRows(rezept.zutaten_fuer_3.map((z) => ({ name: z.name, menge: String(z.menge), einheit: z.einheit, kategorie: z.kategorie })))
+    setSteps(rezept.schritte.join('\n'))
+    setOpen(true)
   }
 
   async function remove(id: string) {
@@ -74,6 +87,7 @@ export function RecipeForm() {
               <div style={{ fontWeight: 600 }}>{r.titel}</div>
               <p className="muted">{r.zutaten_fuer_3.length} Zutaten</p>
             </div>
+            <button type="button" className="btn ghost small" aria-label={"Bearbeiten: " + r.titel} onClick={() => startEdit(r)}>✎</button>
             <button type="button" className="btn ghost small danger" aria-label={`${r.titel} löschen`} onClick={() => remove(r.id)}>×</button>
           </div>
         ))}
@@ -89,7 +103,7 @@ export function RecipeForm() {
         void save()
       }}
     >
-      <div className="section-title" style={{ margin: 0 }}>Neues Rezept</div>
+      <div className="section-title" style={{ margin: 0 }}>{editingId ? 'Rezept ändern' : 'Neues Rezept'}</div>
       <input className="input" placeholder="Name, z. B. Linsensuppe" value={title} onChange={(e) => setTitle(e.target.value)} />
       <div className="row">
         <span className="muted">Für</span>
@@ -123,7 +137,7 @@ export function RecipeForm() {
       <textarea className="textarea" placeholder="Zubereitung, eine Zeile pro Schritt (optional)" value={steps} onChange={(e) => setSteps(e.target.value)} />
 
       <div className="row">
-        <button type="button" className="btn ghost" onClick={() => setOpen(false)}>Abbrechen</button>
+        <button type="button" className="btn ghost" onClick={() => { setOpen(false); setEditingId(null) }}>Abbrechen</button>
         <button type="submit" className="btn primary" style={{ flex: 1 }} disabled={!title.trim()}>Speichern</button>
       </div>
     </form>
