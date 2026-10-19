@@ -25,12 +25,13 @@ type Tab = 'today' | 'calendar' | 'food' | 'training' | 'money' | 'more'
 
 const ACTIVE = '#5d6b3d'
 const IDLE = '#a8957c'
-const KINDS = ['To-do', 'Termin', 'Ausgabe', 'Einkauf']
+const KINDS = ['To-do', 'Termin', 'Ausgabe', 'Einkauf', 'Gewohnheit']
 const PLACEHOLDER: Record<string, string> = {
   'To-do': 'Was steht an?',
   Termin: 'z. B. Friseur',
   Ausgabe: 'z. B. Bäcker',
   Einkauf: 'z. B. Haferflocken',
+  Gewohnheit: 'z. B. Wasser trinken',
 }
 
 interface SheetState {
@@ -122,6 +123,8 @@ function App() {
         ...budget,
         expenses: [...budget.expenses, { id: `e-${Date.now()}`, name: title, cat: sheet.cat, date: today, amount }],
       })
+    } else if (sheet.kind === 'Gewohnheit') {
+      await db.habits.add({ name: title, createdAt: Date.now() })
     } else if (sheet.kind === 'Termin') {
       await db.events.add({ date: today, title, time: sheet.time || undefined })
     } else {

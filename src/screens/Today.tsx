@@ -17,7 +17,6 @@ const DAY_LETTERS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 // Heute 1:1 aus dem Prototyp. Die Inhalte kommen aus unseren Daten.
 export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => void; onOpenSos: () => void }) {
   const [today] = useState(() => dateKey())
-  const [newHabit, setNewHabit] = useState('')
   const [mIdx, setMIdx] = useState(0)
 
   const habits = useLiveQuery(() => db.habits.toArray(), [], [])
@@ -61,13 +60,6 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     const list = drinks[today] ?? []
     if (list.length === 0) return
     await setDrinks({ ...drinks, [today]: list.slice(0, -1) })
-  }
-
-  async function addHabit() {
-    const name = newHabit.trim()
-    if (!name) return
-    await db.habits.add({ name, createdAt: Date.now() })
-    setNewHabit('')
   }
 
   const mochiMessages = [
@@ -169,16 +161,6 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     <section className="stack" style={{ gap: 18 }}>
       <PrototypeScreen template={HEUTE} ctx={ctx} onAct={handleAct} />
 
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault()
-          void addHabit()
-        }}
-      >
-        <input className="input" placeholder="Neue Gewohnheit…" value={newHabit} onChange={(e) => setNewHabit(e.target.value)} />
-        <button className="btn primary" type="submit">+</button>
-      </form>
 
     </section>
   )
