@@ -15,6 +15,7 @@ export const BUDGET = `<sc-if value="{{ isGeld }}" hint-placeholder-val="{{ fals
 
 <div style="display:flex;flex-direction:column;gap:10px">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 style="margin:0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:20px">Budget nach Kategorie</h2><button data-act="{{ toggleEdit }}" style="height:34px;padding:0 14px;border:none;border-radius:99px;background:#efe2c9;color:#4a3828;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap">{{ editLabel }}</button></div>
+<p style="margin:0;font-size:14px;font-weight:700;color:#6b5340">{{ unallocated }}</p>
 <sc-if value="{{ editCats }}" hint-placeholder-val="{{ false }}">
 <div style="background:#fffaf0;border-radius:24px;padding:12px 14px;box-shadow:0 6px 18px rgba(94,60,25,.08);display:flex;flex-direction:column;gap:8px">
 <sc-for list="{{ catRows }}" as="cr" hint-placeholder-count="6">

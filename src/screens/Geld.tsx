@@ -34,6 +34,9 @@ export function Geld({ onOpenSheet }: { onOpenSheet: (kind: string) => void }) {
   const [yearNum, monthNum] = month.split('-').map(Number)
   const lastDay = new Date(yearNum, monthNum, 0).getDate()
   const daysLeft = started ? Math.max(1, lastDay - Number(today.slice(8, 10)) + 1) : lastDay
+  // Wie viel vom Gesamtbetrag noch auf Kategorien verteilt werden kann
+  const allocated = budget.categories.reduce((s, c) => s + c.limit, 0)
+  const notAllocated = budget.avail - allocated
   const { target, saved, monthly } = budget.saving
   const months = monthly > 0 ? Math.ceil(Math.max(0, target - saved) / monthly) : 0
 
@@ -45,6 +48,9 @@ export function Geld({ onOpenSheet }: { onOpenSheet: (kind: string) => void }) {
     availStr: availDraft ?? String(budget.avail).replace('.', ','),
     moneyLeft: eur(Math.round(free)),
     perDay: eur(Math.round(free / daysLeft)),
+    unallocated: notAllocated >= 0
+      ? `Noch zu verteilen: ${eur(Math.round(notAllocated))}`
+      : `${eur(Math.round(-notAllocated))} mehr auf Kategorien verteilt als verfügbar`,
     editCats,
     editLabel: editCats ? 'Fertig' : 'Bearbeiten',
     toggleEdit: 'cat:toggle',

@@ -33,6 +33,30 @@ let applyingRemote = false
 let pushTimer: ReturnType<typeof setTimeout> | undefined
 let started = false
 
+// Merkt sich, dass lokale Änderungen noch nicht hochgeladen sind. Das bleibt auch nach einem Neuladen.
+const DIRTY_KEY = 'lifehub.dirty'
+function markDirty() {
+  try {
+    localStorage.setItem(DIRTY_KEY, '1')
+  } catch {
+    // Speicher nicht verfügbar
+  }
+}
+function clearDirty() {
+  try {
+    localStorage.removeItem(DIRTY_KEY)
+  } catch {
+    // Speicher nicht verfügbar
+  }
+}
+function isDirty(): boolean {
+  try {
+    return localStorage.getItem(DIRTY_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 async function exportSnapshot(): Promise<Snapshot> {
   const entries = await Promise.all(
     tableNames().map(async (name) => [name, await db.table(name).toArray()] as const),
@@ -82,10 +106,12 @@ async function pushNow() {
     setStatus('error')
     return
   }
+  clearDirty()
   setStatus('synced')
 }
 
 function schedulePush() {
+  markDirty()
   if (pushTimer !== undefined) clearTimeout(pushTimer)
   pushTimer = setTimeout(() => {
     void pushNow()
@@ -95,6 +121,12 @@ function schedulePush() {
 // Lädt beim Login den Snapshot aus der Cloud. Gibt es noch keinen, wird der lokale
 // Stand hochgeladen (z. B. deine bisherigen Daten vom PC).
 export async function syncOnLogin(userId: string) {
+  // Lokale Änderungen, die noch nicht hochgeladen sind, sind neuer als der Cloud-Stand.
+  // Sie werden zuerst hochgeladen und nicht überschrieben.
+  if (isDirty()) {
+    await pushNow()
+    return
+  }
   setStatus('syncing')
   const { data, error } = await supabase
     .from('lifehub_snapshots')
