@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { onSyncStatus, signOutAndClear, type SyncStatus } from '../lib/sync'
-import { useKv, writeKv } from '../lib/store'
+import { readKv, useKv, writeKv } from '../lib/store'
+import type { Rezept } from '../lib/content'
 
 const STATUS_TEXT: Record<SyncStatus, string> = {
   idle: 'Bereit',
@@ -16,6 +17,44 @@ async function importFile(file: File): Promise<string> {
   if (Array.isArray(data.rezepte) && data.basics_einkauf) {
     await writeKv('content.rezepte', data)
     return 'Rezepte'
+  }
+  // Eigene Rezepte als Datei: { "eigeneRezepte": [ { titel, portionen, zutaten: [{name, menge, einheit, kategorie}], schritte, kcal, protein, carbs, fat } ] }
+  if (Array.isArray(data.eigeneRezepte)) {
+    type Eingang = {
+      titel: string
+      portionen?: number
+      zutaten: { name: string; menge: number; einheit?: string; kategorie?: string }[]
+      schritte?: string[]
+      kcal?: number
+      protein?: number
+      carbs?: number
+      fat?: number
+    }
+    const eingang = data.eigeneRezepte as Eingang[]
+    const current = await readKv<Rezept[]>('myRecipes', [])
+    const stamp = Date.now()
+    const neu: Rezept[] = eingang.map((r, i) => {
+      const base = r.portionen && r.portionen > 0 ? r.portionen : 3
+      return {
+        id: 'import-' + stamp + '-' + i,
+        titel: r.titel,
+        hinweis: 'Eigenes Rezept',
+        zutaten_fuer_3: r.zutaten.map((z) => ({
+          name: z.name,
+          menge: Math.round(((z.menge * 3) / base) * 10) / 10,
+          einheit: z.einheit ?? 'g',
+          kategorie: z.kategorie ?? 'Sonstiges',
+        })),
+        schritte: r.schritte ?? [],
+      }
+    })
+    await writeKv('myRecipes', [...current, ...neu])
+    const nutri = await readKv<Record<string, { kcal: number; protein: number; carbs: number; fat: number }>>('recipeNutrition', {})
+    eingang.forEach((r, i) => {
+      if (r.kcal && r.kcal > 0) nutri[neu[i].id] = { kcal: r.kcal, protein: r.protein ?? 0, carbs: r.carbs ?? 0, fat: r.fat ?? 0 }
+    })
+    await writeKv('recipeNutrition', nutri)
+    return 'Eigene Rezepte (' + neu.length + ')'
   }
   if (data.einheiten && data.rad) {
     await writeKv('content.training', data)
