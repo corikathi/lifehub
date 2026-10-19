@@ -44,7 +44,7 @@ export function Food() {
   const [weekStart, setWeekStart] = useState(() => mondayOf(today))
   const [openDay, setOpenDay] = useState<number | null>(null)
   const [view, setView] = useState<'plan' | 'shopping' | 'hunger' | 'kcal'>('plan')
-  const [section, setSection] = useState<'heute' | 'woche' | 'rezepte' | 'trend'>('heute')
+  const [section, setSection] = useState<'heute' | 'woche' | 'rezepte'>('heute')
 
   const days = weekDays(weekStart)
   const skipped = meals.skip[weekStart] ?? []
@@ -95,11 +95,14 @@ export function Food() {
         <button type="button" className={section === 'heute' ? 'active' : ''} onClick={() => setSection('heute')}>Heute</button>
         <button type="button" className={section === 'woche' ? 'active' : ''} onClick={() => setSection('woche')}>Woche</button>
         <button type="button" className={section === 'rezepte' ? 'active' : ''} onClick={() => setSection('rezepte')}>Rezepte</button>
-        <button type="button" className={section === 'trend' ? 'active' : ''} onClick={() => setSection('trend')}>Trend</button>
       </div>
 
-      {section === 'heute' && <EssenOverview part="heute" />}
-      {section === 'trend' && <EssenOverview part="trend" />}
+      {section === 'heute' && (
+        <>
+          <EssenOverview part="heute" />
+          <EssenOverview part="trend" />
+        </>
+      )}
       {section === 'rezepte' && (
         <>
           <RecipeForm />
