@@ -64,3 +64,27 @@ export function forGrams(hit: FoodHit, grams: number): Omit<NutriEntry, 'id' | '
     fat: Math.round(hit.fat * f * 10) / 10,
   }
 }
+
+// Produkt über den Barcode (EAN) nachschlagen
+export async function lookupBarcode(code: string): Promise<FoodHit | null> {
+  const clean = code.replace(/\D/g, '')
+  if (clean.length < 8) return null
+  const res = await fetch(
+    `https://world.openfoodfacts.org/api/v2/product/${clean}.json?fields=product_name,product_name_de,brands,nutriments`,
+  )
+  if (!res.ok) throw new Error('Barcode-Suche fehlgeschlagen')
+  const data = (await res.json()) as { status?: number; product?: OffProduct }
+  if (data.status !== 1 || !data.product) return null
+  const p = data.product
+  const n = p.nutriments ?? {}
+  const energy = n['energy_100g']
+  const kcal = n['energy-kcal_100g'] ?? (energy !== undefined ? energy / 4.184 : undefined)
+  return {
+    name: p.product_name_de || p.product_name || '',
+    brand: p.brands ?? '',
+    kcal: Math.round(kcal ?? 0),
+    protein: Math.round((n['proteins_100g'] ?? 0) * 10) / 10,
+    carbs: Math.round((n['carbohydrates_100g'] ?? 0) * 10) / 10,
+    fat: Math.round((n['fat_100g'] ?? 0) * 10) / 10,
+  }
+}

@@ -1485,3 +1485,10 @@ textarea {
   line-height: 1.4;
   color: #4a3828;
 }
+
+/* ---------- Suche oben im Essen-Tab ---------- */
+.scan-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

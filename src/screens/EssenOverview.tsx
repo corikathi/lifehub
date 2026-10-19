@@ -12,7 +12,7 @@ import { ESSEN } from '../prototype/essen'
 import { WATER } from '../prototype/water'
 import { PrototypeScreen } from '../components/PrototypeScreen'
 import type { NutriEntry } from '../lib/nutrition'
-import { Kalorien } from './Kalorien'
+import { Suche } from './Suche'
 
 interface MealsState {
   persons: number
@@ -221,10 +221,9 @@ export function EssenOverview() {
 
   return (
     <>
+      <Suche />
       <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
-      <div className="section-title">Mahlzeit eintragen (kcal)</div>
-      <Kalorien />
       <PrototypeScreen template={PART_BOTTOM} ctx={ctx} onAct={handleAct} />
     </>
   )
