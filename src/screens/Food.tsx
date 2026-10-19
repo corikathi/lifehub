@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useKv } from '../lib/store'
 import { Hunger } from './Hunger'
-import { Kalorien } from './Kalorien'
 import { EssenOverview } from './EssenOverview'
 import { addDays, dateKey, formatDay, weekDays } from '../lib/dates'
 import {
@@ -156,11 +155,9 @@ export function Food() {
         <button type="button" className={view === 'plan' ? 'active' : ''} onClick={() => setView('plan')}>Wochenplan</button>
         <button type="button" className={view === 'shopping' ? 'active' : ''} onClick={() => setView('shopping')}>Einkaufszettel</button>
         <button type="button" className={view === 'hunger' ? 'active' : ''} onClick={() => setView('hunger')}>Heißhunger</button>
-        <button type="button" className={view === 'kcal' ? 'active' : ''} onClick={() => setView('kcal')}>Kalorien</button>
       </div>
 
       {view === 'hunger' && <Hunger />}
-      {view === 'kcal' && <Kalorien />}
 
       {view === 'plan' && (
         <>
