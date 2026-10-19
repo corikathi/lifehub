@@ -68,7 +68,6 @@ const PART_BOTTOM_A = PART_BOTTOM.slice(0, GRID_START)
 const PART_BOTTOM_GRID = PART_BOTTOM.slice(GRID_START, GRID_END)
 const PART_BOTTOM_C = PART_BOTTOM.slice(GRID_END)
 const GRID_INNER = PART_BOTTOM_GRID.slice(PART_BOTTOM_GRID.indexOf('>') + 1).trimStart()
-const GEW_CHILD_END = blockEnd(GRID_INNER, 0)
 
 // Ziele für Makros. Der Prototyp hat keine Werte, diese sind Startwerte und lassen sich im Code ändern.
 const TARGET_PROTEIN = 140
