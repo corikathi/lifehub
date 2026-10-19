@@ -22,6 +22,8 @@ export function RecipeForm() {
   const [persons, setPersons] = useState('2')
   const [rows, setRows] = useState<Row[]>([{ ...EMPTY_ROW }])
   const [steps, setSteps] = useState('')
+  const [nutri, setNutri] = useKv<Record<string, { kcal: number; protein: number; carbs: number; fat: number }>>('recipeNutrition', {})
+  const [manual, setManual] = useState({ kcal: '', protein: '', carbs: '', fat: '' })
 
   function updateRow(i: number, patch: Partial<Row>) {
     setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)))
@@ -46,6 +48,11 @@ export function RecipeForm() {
       schritte: steps.split('\n').map((s) => s.trim()).filter(Boolean),
     }
     await setMine([...mine, rezept])
+    const num = (v: string) => Number(v.replace(',', '.')) || 0
+    if (num(manual.kcal) > 0) {
+      await setNutri({ ...nutri, [rezept.id]: { kcal: num(manual.kcal), protein: num(manual.protein), carbs: num(manual.carbs), fat: num(manual.fat) } })
+    }
+    setManual({ kcal: '', protein: '', carbs: '', fat: '' })
     setTitle('')
     setPersons('2')
     setRows([{ ...EMPTY_ROW }])
@@ -104,6 +111,14 @@ export function RecipeForm() {
         </div>
       ))}
       <button type="button" className="btn ghost small" onClick={() => setRows([...rows, { ...EMPTY_ROW }])}>+ Zutat</button>
+
+      <div className="section-title" style={{ margin: 0 }}>Nährwerte pro Portion (optional)</div>
+      <div className="manual-grid">
+        <input className="input" inputMode="decimal" placeholder="kcal" value={manual.kcal} onChange={(e) => setManual({ ...manual, kcal: e.target.value })} aria-label="kcal" />
+        <input className="input" inputMode="decimal" placeholder="Protein g" value={manual.protein} onChange={(e) => setManual({ ...manual, protein: e.target.value })} aria-label="Protein" />
+        <input className="input" inputMode="decimal" placeholder="KH g" value={manual.carbs} onChange={(e) => setManual({ ...manual, carbs: e.target.value })} aria-label="Kohlenhydrate" />
+        <input className="input" inputMode="decimal" placeholder="Fett g" value={manual.fat} onChange={(e) => setManual({ ...manual, fat: e.target.value })} aria-label="Fett" />
+      </div>
 
       <textarea className="textarea" placeholder="Zubereitung, eine Zeile pro Schritt (optional)" value={steps} onChange={(e) => setSteps(e.target.value)} />
 

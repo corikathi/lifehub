@@ -74,6 +74,7 @@ function RecipeNutritionPanel({
 }) {
   const [hits, setHits] = useState<Record<string, FoodHit[]>>({})
   const [busy, setBusy] = useState<string | null>(null)
+  const [manual, setManual] = useState({ kcal: '', protein: '', carbs: '', fat: '' })
 
   async function find(name: string) {
     setBusy(name)
@@ -120,6 +121,17 @@ function RecipeNutritionPanel({
     <div className="card form" style={{ marginTop: 4 }}>
       <p style={{ fontWeight: 700, margin: 0 }}>{recipe.titel}</p>
       <p className="muted" style={{ margin: 0 }}>Werte pro Portion, Basis {BASE_PERSONS} Personen. Stück und Löffel sind Richtwerte.</p>
+      <div className="section-title" style={{ margin: 0 }}>Pro Portion von Hand eintragen</div>
+      <div className="manual-grid">
+        <input className="input" inputMode="decimal" placeholder="kcal" value={manual.kcal} onChange={(e) => setManual({ ...manual, kcal: e.target.value })} aria-label="kcal" />
+        <input className="input" inputMode="decimal" placeholder="Protein g" value={manual.protein} onChange={(e) => setManual({ ...manual, protein: e.target.value })} aria-label="Protein" />
+        <input className="input" inputMode="decimal" placeholder="KH g" value={manual.carbs} onChange={(e) => setManual({ ...manual, carbs: e.target.value })} aria-label="Kohlenhydrate" />
+        <input className="input" inputMode="decimal" placeholder="Fett g" value={manual.fat} onChange={(e) => setManual({ ...manual, fat: e.target.value })} aria-label="Fett" />
+      </div>
+      <button type="button" className="btn" disabled={!(Number(manual.kcal.replace(',', '.')) > 0)} onClick={() => { const num = (v: string) => Number(v.replace(',', '.')) || 0; void onSave({ kcal: num(manual.kcal), protein: num(manual.protein), carbs: num(manual.carbs), fat: num(manual.fat) }) }}>
+        Von Hand speichern
+      </button>
+
       {rows.map((r) => {
         const m = matches[r.name]
         const options = hits[r.name]

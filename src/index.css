@@ -1519,3 +1519,9 @@ textarea {
   text-align: left;
   cursor: pointer;
 }
+
+.manual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
