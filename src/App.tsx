@@ -70,7 +70,23 @@ const NAV_TABS: Record<string, Tab> = {
 }
 
 function App() {
-  const [tab, setTab] = useState<Tab>('today')
+  // Zuletzt geöffneten Tab merken, damit die App nach dem Verlassen dort weitermacht
+  const [tab, setTabState] = useState<Tab>(() => {
+    try {
+      const saved = localStorage.getItem('lifehub.tab') as Tab | null
+      return saved ?? 'today'
+    } catch {
+      return 'today'
+    }
+  })
+  const setTab = (next: Tab) => {
+    setTabState(next)
+    try {
+      localStorage.setItem('lifehub.tab', next)
+    } catch {
+      // Speicher nicht verfügbar, dann eben ohne Merken
+    }
+  }
   // undefined = noch am Prüfen, null = abgemeldet
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [skipUnlock, setSkipUnlock] = useState(false)
