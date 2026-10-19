@@ -5,7 +5,6 @@ import { useKv } from '../lib/store'
 import { addDays, dateKey, formatDay, greeting, streakOf, weekDays } from '../lib/dates'
 import { HEUTE } from '../prototype/heute'
 import { PrototypeScreen } from '../components/PrototypeScreen'
-import { STEPS } from '../components/Abendplan'
 import { defaultSlot, findRecipe, type RezepteFile, type TrainingFile } from '../lib/content'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'money' | 'more'
@@ -28,13 +27,11 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   const [trainingContent] = useKv<TrainingFile | null>('content.training', null)
   const [mealsState] = useKv<{ weeks: Record<string, string[]> }>('meals', { weeks: {} })
   const [trainingWeeks] = useKv<Record<string, { plan: string[] }>>('trainingWeeks', {})
-  const [abend, setAbend] = useKv<Record<string, boolean[]>>('abendplan', {})
   const weekIndex = (new Date(`${today}T12:00:00`).getDay() + 6) % 7
   const monday = addDays(today, -weekIndex)
   const slot = mealsState.weeks[monday]?.[weekIndex] ?? defaultSlot(monday, weekIndex)
   const todayMeal = slot.startsWith('custom:') ? slot.slice(7) : findRecipe(content?.rezepte ?? [], slot)?.titel ?? 'Noch nichts geplant'
   const todayTraining = trainingWeeks[monday]?.plan?.[weekIndex] ?? trainingContent?.wochenplan_standard[weekIndex]?.split(': ')[1] ?? '–'
-  const abendDone = abend[today] ?? STEPS.map(() => false)
 
   const doneToday = (habitId: number) => logs.some((l) => l.habitId === habitId && l.date === today)
   const water = (drinks[today] ?? []).reduce((sum, d) => sum + d.ml, 0)
@@ -111,9 +108,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     { title: todayMeal, meta: 'Mahlzeit heute', tag: 'Essen', toggle: 'noop', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(false) },
     { title: todayTraining, meta: 'Training', tag: 'Training', toggle: 'noop', tagBg: '#dce8ea', tagInk: '#3f5a66', ...markOf(false) },
     ...events.map((ev) => ({ title: ev.title, meta: ev.note ?? 'Termin', tag: ev.time ?? 'ganztägig', toggle: 'noop', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(false) })),
-    ...STEPS.map((step, i) => ({ title: step, meta: 'Abendplan', tag: 'Abend', toggle: 'abend:' + i, tagBg: '#e7e9cf', tagInk: '#5d6b3d', ...markOf(abendDone[i]) })),
   ]
-  const tasksDone = abendDone.filter(Boolean).length
 
   const glassTiles = Array.from({ length: GLASSES }, (_, i) => ({
     bg: i < filled ? '#7fa9b8' : '#fffaf0',
@@ -127,7 +122,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     days,
     habits: habitTiles,
     tasks: taskTiles,
-    taskCount: `${tasksDone} von ${STEPS.length} abgehakt`,
+    taskCount: `${taskTiles.length} heute`,
     glasses: glassTiles,
     waterText: `${filled} / ${GLASSES} Gläser`,
     mascotMsg: mochiMessages[mIdx % mochiMessages.length],
@@ -139,12 +134,6 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     else if (action === 'nav:woche') onNavigate('calendar')
     else if (action === 'water:add') void addGlass()
     else if (action === 'mochi:next') setMIdx((i) => i + 1)
-    else if (action.startsWith('abend:')) {
-      const i = Number(action.slice(6))
-      const next = [...abendDone]
-      next[i] = !next[i]
-      void setAbend({ ...abend, [today]: next })
-    }
     else if (action.startsWith('habit:')) {
       const id = Number(action.slice(6))
       if (!Number.isNaN(id)) void toggleHabit(id)
