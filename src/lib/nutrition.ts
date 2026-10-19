@@ -113,43 +113,13 @@ export function unitGrams(name: string, menge: number, einheit: string): number 
   return menge * (hit ? hit[1] : 100)
 }
 
-// Zweite Quelle: USDA FoodData Central (englische Namen, Werte pro 100 g). Der Schlüssel DEMO_KEY
-// ist öffentlich und begrenzt; einen eigenen kostenlosen Schlüssel gibt es bei api.data.gov.
-const USDA_KEY = 'DEMO_KEY'
-
-async function searchUsda(query: string): Promise<FoodHit[]> {
-  const url = 'https://api.nal.usda.gov/fdc/v1/foods/search?api_key=' + USDA_KEY + '&pageSize=12&query=' + encodeURIComponent(query)
-  const res = await fetch(url)
-  if (!res.ok) throw new Error('USDA nicht erreichbar')
-  const data = (await res.json()) as {
-    foods?: { description: string; brandOwner?: string; foodNutrients: { nutrientName: string; unitName: string; value: number }[] }[]
-  }
-  const r1 = (v: number) => Math.round(v * 10) / 10
-  return (data.foods ?? [])
-    .map((f) => {
-      const val = (name: string, unit?: string) =>
-        f.foodNutrients.find((n) => n.nutrientName === name && (!unit || n.unitName === unit))?.value ?? 0
-      return {
-        name: f.description,
-        brand: f.brandOwner ?? 'USDA',
-        kcal: Math.round(val('Energy', 'KCAL')),
-        protein: r1(val('Protein')),
-        carbs: r1(val('Carbohydrate, by difference')),
-        fat: r1(val('Total lipid (fat)')),
-      }
-    })
-    .filter((f) => f.kcal > 0)
-}
-
-// Erst Open Food Facts, bei Ausfall oder ohne Treffer USDA
+// Suche nur in der deutschen Datenbank Open Food Facts
 export async function searchFood(query: string): Promise<FoodHit[]> {
   const q = query.trim()
   if (q.length < 2) return []
   try {
-    const hits = await searchOff(q)
-    if (hits.length > 0) return hits
+    return await searchOff(q)
   } catch {
-    // Open Food Facts gerade nicht erreichbar, dann USDA
+    throw new Error('Online gerade nicht erreichbar')
   }
-  return searchUsda(q)
 }
