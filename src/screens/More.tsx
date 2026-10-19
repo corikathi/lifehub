@@ -11,6 +11,14 @@ const STATUS_TEXT: Record<SyncStatus, string> = {
 }
 
 // Erkennt, welche Datei hochgeladen wurde, und speichert sie an der richtigen Stelle.
+// Holt den JSON-Teil aus dem eingefügten Text, auch wenn Code-Markierungen oder Zusatztext dabei sind
+function cleanPaste(text: string): string {
+  const s = text.trim()
+  const a = s.indexOf('{')
+  const b = s.lastIndexOf('}')
+  return a >= 0 && b > a ? s.slice(a, b + 1) : s
+}
+
 async function importData(data: Record<string, unknown>): Promise<string> {
 
   if (Array.isArray(data.rezepte) && data.basics_einkauf) {
@@ -83,7 +91,7 @@ export function More({ email }: { email?: string }) {
     setBusy(true)
     setMessage(null)
     try {
-      const result = await importData(JSON.parse(pasteText) as Record<string, unknown>)
+      const result = await importData(JSON.parse(cleanPaste(pasteText)) as Record<string, unknown>)
       setMessage('Importiert: ' + result)
       setPasteText('')
     } catch {
