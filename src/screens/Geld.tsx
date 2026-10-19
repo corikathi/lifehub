@@ -59,9 +59,13 @@ export function Geld({ onOpenSheet }: { onOpenSheet: (kind: string) => void }) {
     cats: budget.categories.map((c, i) => {
       const used = spentIn(c.name)
       const over = used > c.limit
+      const left = Math.round(c.limit - used)
       return {
         name: c.name,
-        val: `${eur(Math.round(used))} / ${eur(c.limit)}`,
+        // Wie viel noch übrig ist, und wie viel schon ausgegeben wurde
+        val: over
+          ? `${eur(-left)} zu viel · ${eur(Math.round(used))} von ${eur(c.limit)}`
+          : `noch ${eur(left)} · ${eur(Math.round(used))} von ${eur(c.limit)}`,
         valInk: over ? '#a2452a' : '#6b5340',
         w: `${c.limit ? Math.min(100, (used / c.limit) * 100) : 0}%`,
         bg: over ? '#c9764a' : CAT_COLORS[i % CAT_COLORS.length],
