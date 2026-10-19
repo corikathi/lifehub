@@ -89,7 +89,9 @@ function mergeDefined(target: ParsedRecipe, values: Partial<ParsedRecipe>): void
 }
 
 export function parseRecipeText(text: string): ParsedRecipe[] {
-  const lines = text.split('\n').map((l) => l.trim())
+  // Unsichtbare Zeichen aus dem Kopieren (Zero-Width, geschütztes Leerzeichen) entfernen
+  const cleaned = text.replace(/[​-‍﻿]/g, '').replace(/ /g, ' ')
+  const lines = cleaned.split('\n').map((l) => l.trim())
   const recipes: ParsedRecipe[] = []
   let current: ParsedRecipe | null = null
   let section: 'none' | 'naehr' | 'zutaten' | 'anleitung' = 'none'
