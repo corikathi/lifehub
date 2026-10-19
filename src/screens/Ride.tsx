@@ -171,6 +171,16 @@ export function Ride({ content }: { content: TrainingFile }) {
               <div style={{ fontWeight: 600 }}>{MODES.find((m) => m.id === r.type)?.label ?? r.type}</div>
               <p className="muted">{r.km} km · {r.min} Min. · {r.feel}</p>
             </div>
+            <button
+              type="button"
+              className="btn ghost small danger"
+              aria-label={`Fahrt vom ${formatDay(r.date, { day: 'numeric', month: 'short' })} löschen`}
+              onClick={() => {
+                if (window.confirm('Diese Fahrt löschen?')) void setRides({ log: rides.log.filter((x) => x.ts !== r.ts) })
+              }}
+            >
+              ×
+            </button>
           </div>
         ))}
       </div>
