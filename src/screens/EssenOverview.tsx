@@ -126,6 +126,9 @@ export function EssenOverview() {
   const waterCtx = { glasses, waterText: `${filled} / ${GLASSES} Gläser` }
 
   const weekProtein = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.protein, 0))
+  const weekKcal = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.kcal, 0))
+  const loggedKcal = weekKcal.filter(Boolean)
+  const avgKcal = loggedKcal.length ? Math.round(loggedKcal.reduce((s, v) => s + v, 0) / loggedKcal.length) : 0
   const recentWeights = [...(measures.log ?? [])].slice(-7)
   const latest = recentWeights[recentWeights.length - 1]?.gewicht
   const first = recentWeights[0]?.gewicht
@@ -251,7 +254,16 @@ export function EssenOverview() {
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         {PART_BOTTOM_A.trim() && <PrototypeScreen template={PART_BOTTOM_A} ctx={ctx} onAct={handleAct} />}
-        <WeightEntry />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <WeightEntry />
+          <div style={{ background: '#fffaf0', borderRadius: 20, padding: 14, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: '0 6px 18px rgba(94,60,25,0.08)' }}>
+            <span style={{ fontWeight: 800, fontSize: 14, color: '#c4703f' }}>Kalorien Ø 7 Tage</span>
+            <span style={{ fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 26, color: '#c4703f', lineHeight: 1 }}>{avgKcal ? avgKcal + ' kcal' : '–'}</span>
+            <svg viewBox="0 0 100 30" style={{ width: '100%', height: 40, marginTop: 6 }} aria-hidden="true">
+              <polyline points={line(weekKcal)} fill="none" stroke="#c4703f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
         <PrototypeScreen template={PART_BOTTOM_C} ctx={ctx} onAct={handleAct} />
       </div>
     </>
