@@ -22,6 +22,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   const habits = useLiveQuery(() => db.habits.toArray(), [], [])
   const logs = useLiveQuery(() => db.habitLogs.toArray(), [], [])
   const events = useLiveQuery(() => db.events.where('date').equals(today).sortBy('time'), [today], [])
+  const [todos, setTodos] = useKv<{ id: string; title: string; meta: string; tag: string; done: boolean }[]>('todos', [])
   const [drinks, setDrinks] = useKv<Record<string, { ml: number; t: string; ts: number }[]>>('drinks', {})
   const [content] = useKv<RezepteFile | null>('content.rezepte', null)
   const [trainingContent] = useKv<TrainingFile | null>('content.training', null)
@@ -110,6 +111,9 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     ...events.map((ev) => ({ title: ev.title, meta: ev.note ?? 'Termin', tag: ev.time ?? 'ganztägig', toggle: 'noop', tagBg: '#f7e2b5', tagInk: '#7a561a', ...markOf(false) })),
   ]
 
+  const todoTiles = todos.map((td) => ({ title: td.title, meta: td.meta, tag: td.tag, toggle: 'todo:' + td.id, tagBg: '#e2d2b5', tagInk: '#4a3828', ...markOf(td.done) }))
+  const taskList = [...taskTiles, ...todoTiles]
+
   const glassTiles = Array.from({ length: GLASSES }, (_, i) => ({
     bg: i < filled ? '#7fa9b8' : '#fffaf0',
     tap: 'water:add',
@@ -121,8 +125,8 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     openCalm: 'nav:ruhe',
     days,
     habits: habitTiles,
-    tasks: taskTiles,
-    taskCount: `${taskTiles.length} heute`,
+    taskCount: `${taskList.length} heute`,
+    tasks: taskList,
     glasses: glassTiles,
     waterText: `${filled} / ${GLASSES} Gläser`,
     mascotMsg: mochiMessages[mIdx % mochiMessages.length],
@@ -134,6 +138,11 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     else if (action === 'nav:woche') onNavigate('calendar')
     else if (action === 'water:add') void addGlass()
     else if (action === 'mochi:next') setMIdx((i) => i + 1)
+    else if (action === 'nav:mehr') onNavigate('more')
+    else if (action.startsWith('todo:')) {
+      const id = action.slice(5)
+      void setTodos(todos.map((td) => (td.id === id ? { ...td, done: !td.done } : td)))
+    }
     else if (action.startsWith('habit:')) {
       const id = Number(action.slice(6))
       if (!Number.isNaN(id)) void toggleHabit(id)

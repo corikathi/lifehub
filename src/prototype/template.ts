@@ -1,7 +1,8 @@
 // Minimaler Renderer für die Prototyp-Vorlagen. Unterstützt:
-//   <sc-for list="{{ name }}" as="x"> ... </sc-for>   Wiederholung je Eintrag
-//   {{ pfad.zu.wert }}                                 Platzhalter (HTML-escaped)
-// Klicks werden über data-act-Attribute an den Aufrufer zurückgegeben.
+//   <sc-if value="{{ flag }}"> ... </sc-if>            Bedingung (wahr/falsch)
+//   <sc-for list="{{ name }}" as="x"> ... </sc-for>     Wiederholung je Eintrag
+//   {{ pfad.zu.wert }}                                  Platzhalter (HTML-escaped)
+// Klicks liefern data-act, Eingaben liefern data-change an den Aufrufer.
 
 type Ctx = Record<string, unknown>
 
@@ -20,8 +21,22 @@ function lookup(ctx: Ctx, path: string): unknown {
   }, ctx)
 }
 
+// Innerste Bedingungen zuerst, damit verschachtelte Blöcke funktionieren
+function renderConditions(html: string, ctx: Ctx): string {
+  const re = /<sc-if value="\{\{ ([\w.]+) \}\}"[^>]*>((?:(?!<sc-if)[\s\S])*?)<\/sc-if>/
+  let out = html
+  let m = re.exec(out)
+  while (m) {
+    const show = Boolean(lookup(ctx, m[1]))
+    out = out.slice(0, m.index) + (show ? m[2] : '') + out.slice(m.index + m[0].length)
+    m = re.exec(out)
+  }
+  return out
+}
+
 export function renderTemplate(html: string, ctx: Ctx): string {
-  const withLoops = html.replace(
+  const withConditions = renderConditions(html, ctx)
+  const withLoops = withConditions.replace(
     /<sc-for list="\{\{ ([\w.]+) \}\}" as="(\w+)"[^>]*>([\s\S]*?)<\/sc-for>/g,
     (_m, listPath: string, alias: string, body: string) => {
       const items = lookup(ctx, listPath)

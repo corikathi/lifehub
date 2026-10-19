@@ -2,6 +2,7 @@
 export const HEUTE = `<div data-screen-label="Heute" style="display:flex;flex-direction:column;gap:18px">
 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:6px">
 <div style="flex:1;min-width:0"><p style="margin:0;font-size:14px;color:#8d7459">{{ dateText }}</p><h1 style="margin:2px 0 0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:30px">{{ greeting }}</h1></div>
+<button data-act="nav:mehr" aria-label="Mehr" style="width:44px;height:44px;flex:none;border:none;border-radius:50%;background:transparent;color:#a8957c;cursor:pointer;font-size:22px;font-weight:800;display:grid;place-items:center">⋯</button>
 <button data-act="{{ openCalm }}" aria-label="Ruhe-Ecke" title="Ruhe-Ecke" style="width:44px;height:44px;flex:none;border:none;border-radius:50%;background:transparent;color:#a8957c;cursor:pointer;display:grid;place-items:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 C6 17 4 12 7 7 C9 10 11 11 12 13 C13 11 15 10 17 7 C20 12 18 17 12 21Z"></path><path d="M12 13 V21"></path></svg></button>
 
 </div>
