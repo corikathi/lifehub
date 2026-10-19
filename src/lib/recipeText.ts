@@ -95,40 +95,54 @@ export function parseRecipeText(text: string): ParsedRecipe[] {
   const recipes: ParsedRecipe[] = []
   let current: ParsedRecipe | null = null
   let section: 'none' | 'naehr' | 'zutaten' | 'anleitung' = 'none'
+  let pendingTitle = ''
+
+  const cleanTitle = (l: string) => l.replace(/^\d+[.)]\s*/, '').replace(/^#+\s*/, '').trim()
+  const startRecipe = (): ParsedRecipe => {
+    const r: ParsedRecipe = { titel: pendingTitle || 'Eigenes Rezept', portionen: 3, zutaten: [], schritte: [] }
+    recipes.push(r)
+    return r
+  }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
     if (!line) continue
     const next = lines.slice(i + 1).find((l) => l) ?? ''
-    const isHeading = /^(zutaten|anleitung|zubereitung|nährwerte)/i.test(line)
+    const headingNut = /^nährwerte/i.test(line)
+    const headingZut = /^zutaten/i.test(line)
+    const headingAnl = /^(anleitung|zubereitung)/i.test(line)
+    const isHeading = headingNut || headingZut || headingAnl
 
-    // Neuer Titel: Zeile, die nicht Abschnitt ist und vor "Nährwerte" steht
-    if (!isHeading && /^nährwerte/i.test(next)) {
-      current = { titel: line.replace(/^\d+[.)]\s*/, '').replace(/^#+\s*/, ''), portionen: 3, zutaten: [], schritte: [] }
-      recipes.push(current)
-      section = 'none'
+    if (!isHeading) {
+      // Titelzeile erkennen: steht vor einem Abschnitt (Nährwerte oder Zutaten)
+      if (/^(nährwerte|zutaten)/i.test(next) && section !== 'naehr') {
+        pendingTitle = cleanTitle(line)
+        section = 'none'
+        continue
+      }
+      if (section === 'none') pendingTitle = cleanTitle(line)
+    }
+
+    if (headingNut) {
+      if (!current || current.zutaten.length > 0) current = startRecipe()
+      mergeDefined(current as ParsedRecipe, parseNutrition(line))
+      section = 'naehr'
+      continue
+    }
+    if (headingZut) {
+      if (!current || current.zutaten.length > 0) current = startRecipe()
+      section = 'zutaten'
+      continue
+    }
+    if (headingAnl) {
+      section = 'anleitung'
       continue
     }
     if (!current) continue
 
-    if (/^nährwerte/i.test(line)) {
-      mergeDefined(current, parseNutrition(line))
-      section = 'naehr'
-      continue
-    }
-    if (/^zutaten/i.test(line)) {
-      section = 'zutaten'
-      continue
-    }
-    if (/^(anleitung|zubereitung)/i.test(line)) {
-      section = 'anleitung'
-      continue
-    }
     if (section === 'naehr') {
       mergeDefined(current, parseNutrition(line))
-      continue
-    }
-    if (section === 'zutaten') {
+    } else if (section === 'zutaten') {
       const ing = parseIngredient(line)
       if (ing) current.zutaten.push(ing)
     } else if (section === 'anleitung') {
