@@ -1419,3 +1419,20 @@ textarea {
   transform: scale(0.4);
   opacity: 0.2;
 }
+
+/* ---------- Budget im Stil des Prototyps ---------- */
+
+.section-heading {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 0;
+  color: var(--text);
+}
+
+.cat-edit {
+  display: grid;
+  grid-template-columns: 1fr 110px auto;
+  gap: 8px;
+  align-items: center;
+}
