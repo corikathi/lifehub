@@ -9,6 +9,13 @@ import { forGrams, lookupBarcode, searchFood, type FoodHit, type NutriEntry } fr
 type Detector = { detect: (source: HTMLVideoElement) => Promise<{ rawValue: string }[]> }
 type DetectorCtor = new (opts: { formats: string[] }) => Detector
 
+interface Macros {
+  kcal: string
+  protein: string
+  carbs: string
+  fat: string
+}
+
 interface Unit {
   name: string
   grams: number
@@ -43,6 +50,9 @@ export function Suche() {
   const [code, setCode] = useState('')
   const [creating, setCreating] = useState(false)
   const [own, setOwn] = useState(EMPTY_OWN)
+  const [macroOverride, setMacroOverride] = useState<Macros | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editValues, setEditValues] = useState<Macros>({ kcal: '', protein: '', carbs: '', fat: '' })
   const videoRef = useRef<HTMLVideoElement>(null)
   const hasDetector = typeof window !== 'undefined' && !!(window as unknown as { BarcodeDetector?: unknown }).BarcodeDetector
 
@@ -122,6 +132,7 @@ export function Suche() {
     setAmount('100')
     setNewUnitName('')
     setNewUnitGrams('')
+    setMacroOverride(null)
   }
 
   async function lookupCode() {
@@ -146,11 +157,16 @@ export function Suche() {
   const amountNumber = Number(amount.replace(',', '.')) || 0
   const unitInfo = units.find((u) => u.name === unit)
   const gramsNow = unit === 'g' ? amountNumber : amountNumber * (unitInfo?.grams ?? 0)
+  const computedMacros = picked ? forGrams(picked, gramsNow) : { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+  const num = (v: string) => Number(v.replace(',', '.')) || 0
+  const macrosNow = macroOverride
+    ? { kcal: num(macroOverride.kcal), protein: num(macroOverride.protein), carbs: num(macroOverride.carbs), fat: num(macroOverride.fat) }
+    : computedMacros
 
   async function add() {
     if (!picked || gramsNow <= 0) return
     const label = unit === 'g' ? picked.name : `${picked.name} (${amountNumber} ${unit})`
-    const entry: NutriEntry = { id: `n-${Date.now()}`, name: label, grams: Math.round(gramsNow), ...forGrams(picked, gramsNow) }
+    const entry: NutriEntry = { id: `n-${Date.now()}`, name: label, grams: Math.round(gramsNow), ...macrosNow }
     await setLog({ ...log, [today]: [...entries, entry] })
     // Zuletzt verwendet merken, ohne Doppelungen
     const rest = recent.filter((r) => r.name !== picked.name)
@@ -173,6 +189,20 @@ export function Suche() {
     setAmount('1')
     setNewUnitName('')
     setNewUnitGrams('')
+  }
+
+  function startEdit(en: NutriEntry) {
+    setEditingId(en.id)
+    setEditValues({ kcal: String(en.kcal), protein: String(en.protein), carbs: String(en.carbs), fat: String(en.fat) })
+  }
+
+  async function saveEdit() {
+    if (!editingId) return
+    const updated = entries.map((x) =>
+      x.id === editingId ? { ...x, kcal: num(editValues.kcal), protein: num(editValues.protein), carbs: num(editValues.carbs), fat: num(editValues.fat) } : x,
+    )
+    await setLog({ ...log, [today]: updated })
+    setEditingId(null)
   }
 
   async function remove(id: string) {
@@ -325,6 +355,19 @@ export function Suche() {
             <p className="muted" style={{ margin: 0 }}>
               {gramsNow > 0 ? `${Math.round(gramsNow)} g · ${forGrams(picked, gramsNow).kcal} kcal` : 'Menge eingeben'}
             </p>
+            <div className="manual-grid">
+              {(['kcal', 'protein', 'carbs', 'fat'] as const).map((k) => (
+                <label key={k} className="muted" style={{ fontSize: 12 }}>
+                  {k === 'kcal' ? 'kcal' : k === 'protein' ? 'Protein g' : k === 'carbs' ? 'Kohlenhydrate g' : 'Fett g'}
+                  <input
+                    className="input"
+                    inputMode="decimal"
+                    value={macroOverride ? macroOverride[k] : String(Math.round(computedMacros[k] * 10) / 10)}
+                    onChange={(ev) => setMacroOverride({ ...(macroOverride ?? { kcal: String(computedMacros.kcal), protein: String(computedMacros.protein), carbs: String(computedMacros.carbs), fat: String(computedMacros.fat) }), [k]: ev.target.value })}
+                  />
+                </label>
+              ))}
+            </div>
             <button className="btn primary" type="submit" disabled={gramsNow <= 0}>Eintragen</button>
 
             <div className="section-title" style={{ margin: 0 }}>Neue Einheit, z. B. Scheibe oder Portion</div>
@@ -349,6 +392,23 @@ export function Suche() {
           </div>
         </div>
         {entries.length === 0 && <p className="empty">Noch nichts eingetragen.</p>}
+        {editingId && (
+          <form className="form" style={{ marginTop: 8 }} onSubmit={(ev) => { ev.preventDefault(); void saveEdit() }}>
+            <p style={{ fontWeight: 700, margin: 0 }}>Werte anpassen</p>
+            <div className="manual-grid">
+              {(['kcal', 'protein', 'carbs', 'fat'] as const).map((k) => (
+                <label key={k} className="muted" style={{ fontSize: 12 }}>
+                  {k === 'kcal' ? 'kcal' : k === 'protein' ? 'Protein g' : k === 'carbs' ? 'Kohlenhydrate g' : 'Fett g'}
+                  <input className="input" inputMode="decimal" value={editValues[k]} onChange={(ev) => setEditValues({ ...editValues, [k]: ev.target.value })} />
+                </label>
+              ))}
+            </div>
+            <div className="row">
+              <button type="button" className="btn ghost" onClick={() => setEditingId(null)}>Abbrechen</button>
+              <button type="submit" className="btn primary" style={{ flex: 1 }}>Speichern</button>
+            </div>
+          </form>
+        )}
         {entries.length > 0 && (
           <div className="stack" style={{ gap: 6, marginTop: 10 }}>
             {entries.map((e) => (
@@ -357,6 +417,7 @@ export function Suche() {
                   <div style={{ fontWeight: 600 }}>{e.name} · {e.grams} g</div>
                   <p className="muted">{e.kcal} kcal · P {e.protein} · KH {e.carbs} · F {e.fat}</p>
                 </div>
+                <button type="button" className="btn ghost small" aria-label={"Werte von " + e.name + " anpassen"} onClick={() => startEdit(e)}>✎</button>
                 <button type="button" className="btn ghost small danger" aria-label={`${e.name} löschen`} onClick={() => remove(e.id)}>×</button>
               </div>
             ))}
