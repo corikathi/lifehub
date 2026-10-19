@@ -131,9 +131,6 @@ export function EssenOverview() {
   const recentWeights = [...(measures.log ?? [])].slice(-7)
   const latest = recentWeights[recentWeights.length - 1]?.gewicht
   const first = recentWeights[0]?.gewicht
-  const avgKcal = weekKcal.filter(Boolean).length
-    ? Math.round(weekKcal.filter(Boolean).reduce((s, v) => s + v, 0) / weekKcal.filter(Boolean).length)
-    : 0
 
   // Einkaufsliste der Woche aus den Rezepten
   const groups = new Map<string, { name: string; einheit: string; menge: number; kategorie: string }[]>()
@@ -209,14 +206,6 @@ export function EssenOverview() {
         points: line(recentWeights.map((m) => m.gewicht)),
         bg: '#fffaf0',
         ink: '#5d6b3d',
-      },
-      {
-        name: 'Kalorien Ø 7 Tage',
-        val: avgKcal ? `${avgKcal} kcal` : '–',
-        delta: '',
-        points: line(weekKcal),
-        bg: '#fffaf0',
-        ink: '#c4703f',
       },
     ],
     protHit: `${weekProtein.filter((p) => p >= TARGET_PROTEIN).length} von 7 Tagen erreicht`,
