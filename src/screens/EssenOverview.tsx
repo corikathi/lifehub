@@ -9,6 +9,7 @@ import {
   type RezepteFile,
 } from '../lib/content'
 import { ESSEN } from '../prototype/essen'
+import { WATER } from '../prototype/water'
 import { PrototypeScreen } from '../components/PrototypeScreen'
 import type { NutriEntry } from '../lib/nutrition'
 import { Kalorien } from './Kalorien'
@@ -18,6 +19,12 @@ interface MealsState {
   skip: Record<string, number[]>
   weeks: Record<string, string[]>
 }
+
+// Vorlage aufteilen: oben kcal und Makros, unten Mahlzeiten und Rest
+const SPLIT = ESSEN.lastIndexOf('<div', ESSEN.indexOf('Mahlzeiten heute'))
+const CONTAINER_OPEN = ESSEN.slice(0, ESSEN.indexOf('>') + 1)
+const PART_TOP = ESSEN.slice(0, SPLIT) + '</div>'
+const PART_BOTTOM = CONTAINER_OPEN + ESSEN.slice(SPLIT)
 
 // Ziele für Makros. Der Prototyp hat keine Werte, diese sind Startwerte und lassen sich im Code ändern.
 const TARGET_PROTEIN = 140
@@ -54,6 +61,7 @@ export function EssenOverview() {
   const [goal] = useKv<number>('kcalGoal', 2000)
   const [dayType, setDayType] = useKv<string>('dayType', 'training')
   const [checked, setChecked] = useKv<Record<string, boolean>>('shoppingChecked', {})
+  const [drinks, setDrinks] = useKv<Record<string, { ml: number; t: string; ts: number }[]>>('drinks', {})
   const [measures] = useKv<{ log: { date: string; gewicht: number }[] }>('measures', { log: [] })
 
   const persons = mealsState.persons ?? 2
@@ -71,6 +79,12 @@ export function EssenOverview() {
   const target = dayType === 'rest' ? goal - REST_DAY_MINUS : goal
 
   // Wochen-Werte für Diagramme
+  const todayWater = (drinks[today] ?? []).reduce((s, d) => s + d.ml, 0)
+  const GLASSES = 8
+  const filled = Math.min(GLASSES, Math.floor(todayWater / 250))
+  const glasses = Array.from({ length: GLASSES }, (_, i) => ({ bg: i < filled ? '#7fa9b8' : '#fffaf0', tap: 'water:add' }))
+  const waterCtx = { glasses, waterText: `${filled} / ${GLASSES} Gläser` }
+
   const weekProtein = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.protein, 0))
   const weekKcal = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.kcal, 0))
   const recentWeights = [...(measures.log ?? [])].slice(-7)
@@ -176,6 +190,24 @@ export function EssenOverview() {
     shopOpen: `${shopOpen} offen`,
   }
 
+  async function addWater(ml: number) {
+    const list = drinks[today] ?? []
+    await setDrinks({ ...drinks, [today]: [...list, { ml, t: 'wasser', ts: Date.now() }] })
+  }
+
+  async function undoWater() {
+    const list = drinks[today] ?? []
+    if (list.length === 0) return
+    await setDrinks({ ...drinks, [today]: list.slice(0, -1) })
+  }
+
+  function handleWater(action: string) {
+    if (action === 'water:add') void addWater(250)
+    else if (action === 'water:250') void addWater(250)
+    else if (action === 'water:500') void addWater(500)
+    else if (action === 'water:undo') void undoWater()
+  }
+
   function handleAct(action: string) {
     if (action === 'daytype:training') void setDayType('training')
     else if (action === 'daytype:rest') void setDayType('rest')
@@ -189,9 +221,11 @@ export function EssenOverview() {
 
   return (
     <>
-      <PrototypeScreen template={ESSEN} ctx={ctx} onAct={handleAct} />
+      <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
+      <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
       <div className="section-title">Mahlzeit eintragen (kcal)</div>
       <Kalorien />
+      <PrototypeScreen template={PART_BOTTOM} ctx={ctx} onAct={handleAct} />
     </>
   )
 }
