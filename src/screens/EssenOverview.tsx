@@ -30,7 +30,6 @@ const PART_BOTTOM = CONTAINER_OPEN + ESSEN.slice(SPLIT)
 const TARGET_PROTEIN = 140
 const TARGET_CARBS = 220
 const TARGET_FAT = 70
-const REST_DAY_MINUS = 300
 
 const dayLabel = (i: number) => DAYS[i] ?? ''
 
@@ -59,7 +58,6 @@ export function EssenOverview() {
   const [mealsState, setMealsState] = useKv<MealsState>('meals', { persons: 2, skip: {}, weeks: {} })
   const [nutri] = useKv<Record<string, NutriEntry[]>>('nutriLog', {})
   const [goal] = useKv<number>('kcalGoal', 2000)
-  const [dayType, setDayType] = useKv<string>('dayType', 'training')
   const [checked, setChecked] = useKv<Record<string, boolean>>('shoppingChecked', {})
   const [drinks, setDrinks] = useKv<Record<string, { ml: number; t: string; ts: number }[]>>('drinks', {})
   const [measures] = useKv<{ log: { date: string; gewicht: number }[] }>('measures', { log: [] })
@@ -76,7 +74,7 @@ export function EssenOverview() {
   const protein = entries.reduce((s, e) => s + e.protein, 0)
   const carbs = entries.reduce((s, e) => s + e.carbs, 0)
   const fat = entries.reduce((s, e) => s + e.fat, 0)
-  const target = dayType === 'rest' ? goal - REST_DAY_MINUS : goal
+  const target = goal
 
   // Wochen-Werte für Diagramme
   const todayWater = (drinks[today] ?? []).reduce((s, d) => s + d.ml, 0)
@@ -138,10 +136,6 @@ export function EssenOverview() {
     ingredients: recipe
       ? recipe.zutaten_fuer_3.map((z) => ({ name: z.name, amount: `${scaleAmount(z, persons)} ${z.einheit}` }))
       : [],
-    dayTypes: [
-      { name: 'Training', pick: 'daytype:training', bg: dayType === 'training' ? '#8fa35a' : 'transparent', ink: dayType === 'training' ? '#fffaf0' : '#4a3828' },
-      { name: 'Ruhetag', pick: 'daytype:rest', bg: dayType === 'rest' ? '#8fa35a' : 'transparent', ink: dayType === 'rest' ? '#fffaf0' : '#4a3828' },
-    ],
     kcalEaten: eaten,
     kcalLeft: target - eaten,
     kcalTarget: target,
@@ -209,9 +203,7 @@ export function EssenOverview() {
   }
 
   function handleAct(action: string) {
-    if (action === 'daytype:training') void setDayType('training')
-    else if (action === 'daytype:rest') void setDayType('rest')
-    else if (action === 'persons:-1') void setMealsState({ ...mealsState, persons: Math.max(1, persons - 1) })
+    if (action === 'persons:-1') void setMealsState({ ...mealsState, persons: Math.max(1, persons - 1) })
     else if (action === 'persons:+1') void setMealsState({ ...mealsState, persons: Math.min(6, persons + 1) })
     else if (action.startsWith('shop:')) {
       const key = action.slice(5)

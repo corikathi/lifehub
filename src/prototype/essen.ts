@@ -1,11 +1,7 @@
 // Essen-Screen 1:1 aus dem Prototyp (Lifehub.dc.html). Platzhalter werden in renderTemplate gefüllt.
 export const ESSEN = `<div data-screen-label="Essen" style="display:flex;flex-direction:column;gap:18px;padding-top:6px">
 <div><p style="margin:0;font-size:14px;color:#8d7459">{{ rotationText }}</p><h1 style="margin:2px 0 0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:30px">Essen</h1></div>
-<div style="display:flex;background:#efe2c9;border-radius:16px;padding:4px;gap:4px">
-<sc-for list="{{ dayTypes }}" as="dt" hint-placeholder-count="2">
-<button data-act="{{ dt.pick }}" style="flex:1;height:42px;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;background:{{ dt.bg }};color:{{ dt.ink }}">{{ dt.name }}</button>
-</sc-for>
-</div>
+
 <div style="background:#fffaf0;border-radius:26px;padding:18px;box-shadow:0 6px 18px rgba(94,60,25,.08);display:flex;flex-direction:column;gap:16px">
 <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
 <div><p style="margin:0;font-size:13px;font-weight:700;color:#8d7459">Noch übrig heute</p><p style="margin:2px 0 0;font-family:'Fredoka',sans-serif;font-weight:600;font-size:40px;line-height:1.05">{{ kcalLeft }} <span style="font-size:18px;color:#8d7459">kcal</span></p></div>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useKv } from '../lib/store'
 import { Hunger } from './Hunger'
 import { EssenOverview } from './EssenOverview'
@@ -19,12 +19,6 @@ interface MealsState {
   weeks: Record<string, string[]> // Montag -> 7 Einträge (Rezept-ID oder eigener Text)
 }
 
-interface ShopItem {
-  name: string
-  einheit: string
-  menge: number
-  kategorie: string
-}
 
 // Eigene Gerichte werden als "custom:Text" gespeichert
 function titleOf(slot: string, recipeTitle?: string): string {
@@ -32,15 +26,8 @@ function titleOf(slot: string, recipeTitle?: string): string {
   return slot.startsWith("custom:") ? slot.slice(7) : slot
 }
 
-interface DrinkEntry {
-  ml: number
-  t: string
-  ts: number
-}
 
 const EMPTY_MEALS: MealsState = { persons: 2, skip: {}, weeks: {} }
-const WATER_GOAL = 2000
-const WATER_STEPS = [250, 500]
 
 function mondayOf(key: string): string {
   const d = new Date(`${key}T12:00:00`)
@@ -51,8 +38,6 @@ export function Food() {
   const today = dateKey()
   const [content] = useKv<RezepteFile | null>('content.rezepte', null)
   const [meals, setMeals] = useKv<MealsState>('meals', EMPTY_MEALS)
-  const [drinks, setDrinks] = useKv<Record<string, DrinkEntry[]>>('drinks', {})
-  const [checked, setChecked] = useKv<Record<string, boolean>>('shoppingChecked', {})
   const [weekStart, setWeekStart] = useState(() => mondayOf(today))
   const [openDay, setOpenDay] = useState<number | null>(null)
   const [view, setView] = useState<'plan' | 'shopping' | 'hunger' | 'kcal'>('plan')
@@ -99,50 +84,12 @@ export function Food() {
     await setMeals({ ...meals, persons: n })
   }
 
-  const todayDrinks = drinks[today] ?? []
-  const todayMl = todayDrinks.reduce((s, d) => s + d.ml, 0)
-
-  async function addWater(ml: number) {
-    const list = drinks[today] ?? []
-    await setDrinks({ ...drinks, [today]: [...list, { ml, t: 'wasser', ts: Date.now() }] })
-  }
-
-  async function undoWater() {
-    const list = drinks[today] ?? []
-    if (list.length === 0) return
-    await setDrinks({ ...drinks, [today]: list.slice(0, -1) })
-  }
 
   return (
     <section className="stack">
       <EssenOverview />
 
-      <header>
-        <h1 className="title">Essen</h1>
-        <p className="subtitle">{formatDay(today)}</p>
-      </header>
-
-      <div className="card">
-        <div className="row between">
-          <div>
-            <p className="muted">Wasser heute</p>
-            <p className="water-amount">{todayMl} ml</p>
-          </div>
-          <span className="pill">Ziel {WATER_GOAL} ml</span>
-        </div>
-        <div className="progress terra" role="progressbar" aria-valuenow={Math.min(100, Math.round((todayMl / WATER_GOAL) * 100))} aria-valuemin={0} aria-valuemax={100}>
-          <span style={{ width: `${Math.min((todayMl / WATER_GOAL) * 100, 100)}%` }} />
-        </div>
-        <div className="row" style={{ marginTop: 12 }}>
-          {WATER_STEPS.map((ml) => (
-            <button key={ml} type="button" className="btn" style={{ flex: 1 }} onClick={() => addWater(ml)}>
-              + {ml} ml
-            </button>
-          ))}
-          <button type="button" className="btn ghost small" onClick={undoWater} aria-label="Letzten Eintrag rückgängig machen">↶</button>
-        </div>
-      </div>
-
+      
       <div className="row between">
         <button type="button" className="btn ghost" onClick={() => setWeekStart(addDays(weekStart, -7))} aria-label="Vorwoche">←</button>
         <span className="muted">
@@ -153,7 +100,7 @@ export function Food() {
 
       <div className="segmented" role="tablist">
         <button type="button" className={view === 'plan' ? 'active' : ''} onClick={() => setView('plan')}>Wochenplan</button>
-        <button type="button" className={view === 'shopping' ? 'active' : ''} onClick={() => setView('shopping')}>Einkaufszettel</button>
+        
         <button type="button" className={view === 'hunger' ? 'active' : ''} onClick={() => setView('hunger')}>Heißhunger</button>
       </div>
 
@@ -235,18 +182,7 @@ export function Food() {
         </>
       )}
 
-      {view === 'shopping' && (
-        <Shopping
-          content={content}
-          weekDaysList={days}
-          slotFor={slotFor}
-          skipped={skipped}
-          persons={meals.persons}
-          weekStart={weekStart}
-          checked={checked}
-          setChecked={setChecked}
-        />
-      )}
+      
     </section>
   )
 }
@@ -269,78 +205,4 @@ function CustomMeal({ onSave }: { onSave: (text: string) => void }) {
   )
 }
 
-interface ShoppingProps {
-  content: RezepteFile
-  weekDaysList: string[]
-  slotFor: (i: number) => string
-  skipped: number[]
-  persons: number
-  weekStart: string
-  checked: Record<string, boolean>
-  setChecked: (next: Record<string, boolean>) => Promise<void>
-}
 
-function Shopping({ content, slotFor, skipped, persons, weekStart, checked, setChecked }: ShoppingProps) {
-  const groups = useMemo(() => {
-    const map = new Map<string, ShopItem>()
-    for (let i = 0; i < 7; i++) {
-      if (skipped.includes(i)) continue
-      const recipe = findRecipe(content.rezepte, slotFor(i))
-      if (!recipe) continue
-      for (const z of recipe.zutaten_fuer_3) {
-        const key = `${z.name}|${z.einheit}`
-        const entry = map.get(key) ?? { name: z.name, einheit: z.einheit, menge: 0, kategorie: z.kategorie }
-        entry.menge += scaleAmount(z, persons)
-        map.set(key, entry)
-      }
-    }
-    const byCat: Record<string, ShopItem[]> = {}
-    for (const entry of map.values()) {
-      ;(byCat[entry.kategorie] ??= []).push(entry)
-    }
-    return byCat
-  }, [content, skipped, persons, slotFor])
-
-  const toggle = (key: string) => setChecked({ ...checked, [key]: !checked[key] })
-  const weekPrefix = `${weekStart}|`
-
-  return (
-    <div className="stack">
-      {Object.keys(groups).length === 0 && <p className="empty">Diese Woche gibt es nichts einzukaufen.</p>}
-      {Object.entries(groups).map(([cat, items]) => (
-        <div className="card" key={cat}>
-          <p className="section-title" style={{ margin: '0 0 6px' }}>{cat}</p>
-          {items.map((it) => {
-            const key = `${weekPrefix}${it.name}|${it.einheit}`
-            return (
-              <label className="check-row" key={key}>
-                <input type="checkbox" checked={!!checked[key]} onChange={() => toggle(key)} />
-                <span className={checked[key] ? 'done-text' : ''}>
-                  {it.name} · {Math.round(it.menge * 10) / 10} {it.einheit}
-                </span>
-              </label>
-            )
-          })}
-        </div>
-      ))}
-
-      <div className="card">
-        <p className="section-title" style={{ margin: '0 0 6px' }}>Basics</p>
-        {Object.entries(content.basics_einkauf).map(([group, items]) => (
-          <div key={group} style={{ marginBottom: 8 }}>
-            <p className="muted" style={{ fontWeight: 600 }}>{group}</p>
-            {items.map((item) => {
-              const key = `basics|${item}`
-              return (
-                <label className="check-row" key={key}>
-                  <input type="checkbox" checked={!!checked[key]} onChange={() => toggle(key)} />
-                  <span className={checked[key] ? 'done-text' : ''}>{item}</span>
-                </label>
-              )
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
