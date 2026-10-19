@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db'
 import { useKv } from '../lib/store'
+import { useRecipes } from '../lib/recipes'
 import { addDays, dateKey, formatDay, weekDays } from '../lib/dates'
-import { DAYS, defaultSlot, findRecipe, type RezepteFile, type TrainingFile } from '../lib/content'
+import { DAYS, defaultSlot, findRecipe, type TrainingFile } from '../lib/content'
 import { WOCHE } from '../prototype/woche'
 import { PrototypeScreen } from '../components/PrototypeScreen'
 
@@ -26,7 +27,7 @@ export function Calendar() {
     [],
   )
 
-  const [content] = useKv<RezepteFile | null>('content.rezepte', null)
+  const content = useRecipes()
   const [trainingContent] = useKv<TrainingFile | null>('content.training', null)
   const [mealsState] = useKv<{ weeks: Record<string, string[]> }>('meals', { weeks: {} })
   const [trainingWeeks] = useKv<Record<string, { plan: string[] }>>('trainingWeeks', {})

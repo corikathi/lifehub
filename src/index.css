@@ -1492,3 +1492,15 @@ textarea {
   flex-direction: column;
   gap: 8px;
 }
+
+/* ---------- Eigene Rezepte ---------- */
+.ingredient-row {
+  display: grid;
+  grid-template-columns: 1.4fr 0.7fr 0.6fr 1fr;
+  gap: 6px;
+}
+.ingredient-row .input,
+.ingredient-row .select {
+  padding: 9px 8px;
+  font-size: 14px;
+}

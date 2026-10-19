@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db'
 import { useKv } from '../lib/store'
+import { useRecipes } from '../lib/recipes'
 import { addDays, dateKey, formatDay, greeting, streakOf, weekDays } from '../lib/dates'
 import { HEUTE } from '../prototype/heute'
 import { PrototypeScreen } from '../components/PrototypeScreen'
-import { defaultSlot, findRecipe, type RezepteFile, type TrainingFile } from '../lib/content'
+import { defaultSlot, findRecipe, type TrainingFile } from '../lib/content'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'money' | 'more'
 
@@ -26,7 +27,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   const [taskDone, setTaskDone] = useKv<Record<string, boolean>>('taskDone', {})
   const doneOf = (id: string) => !!taskDone[today + '|' + id]
   const [drinks, setDrinks] = useKv<Record<string, { ml: number; t: string; ts: number }[]>>('drinks', {})
-  const [content] = useKv<RezepteFile | null>('content.rezepte', null)
+  const content = useRecipes()
   const [trainingContent] = useKv<TrainingFile | null>('content.training', null)
   const [mealsState] = useKv<{ weeks: Record<string, string[]> }>('meals', { weeks: {} })
   const [trainingWeeks] = useKv<Record<string, { plan: string[] }>>('trainingWeeks', {})

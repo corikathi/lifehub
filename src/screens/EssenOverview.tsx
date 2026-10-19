@@ -1,4 +1,5 @@
 import { useKv } from '../lib/store'
+import { useRecipes } from '../lib/recipes'
 import { addDays, dateKey, weekDays } from '../lib/dates'
 import {
   DAYS,
@@ -6,7 +7,6 @@ import {
   findRecipe,
   rotationWeek,
   scaleAmount,
-  type RezepteFile,
 } from '../lib/content'
 import { ESSEN } from '../prototype/essen'
 import { WATER } from '../prototype/water'
@@ -65,7 +65,7 @@ export function EssenOverview() {
   const monday = addDays(today, -weekIndex)
   const days = weekDays(today)
 
-  const [content] = useKv<RezepteFile | null>('content.rezepte', null)
+  const content = useRecipes()
   const [mealsState, setMealsState] = useKv<MealsState>('meals', { persons: 2, skip: {}, weeks: {} })
   const [nutri] = useKv<Record<string, NutriEntry[]>>('nutriLog', {})
   const [goal] = useKv<number>('kcalGoal', 2000)

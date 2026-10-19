@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useKv } from '../lib/store'
+import { useRecipes } from '../lib/recipes'
 import { Hunger } from './Hunger'
 import { ShoppingList } from '../components/ShoppingList'
+import { RecipeForm } from '../components/RecipeForm'
 import { EssenOverview } from './EssenOverview'
 import { addDays, dateKey, formatDay, weekDays } from '../lib/dates'
 import {
@@ -10,7 +12,6 @@ import {
   findRecipe,
   rotationWeek,
   scaleAmount,
-  type RezepteFile,
   type Zutat,
 } from '../lib/content'
 
@@ -37,7 +38,7 @@ function mondayOf(key: string): string {
 
 export function Food() {
   const today = dateKey()
-  const [content] = useKv<RezepteFile | null>('content.rezepte', null)
+  const content = useRecipes()
   const [meals, setMeals] = useKv<MealsState>('meals', EMPTY_MEALS)
   const [weekStart, setWeekStart] = useState(() => mondayOf(today))
   const [openDay, setOpenDay] = useState<number | null>(null)
@@ -109,6 +110,8 @@ export function Food() {
       {view === 'shopping' && content && (
         <ShoppingList content={content} slots={[0, 1, 2, 3, 4, 5, 6].map(slotFor)} persons={meals.persons} monday={weekStart} />
       )}
+
+      {view === 'plan' && <RecipeForm />}
 
       {view === 'plan' && (
         <>
