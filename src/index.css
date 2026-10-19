@@ -1128,3 +1128,15 @@ textarea {
   border-radius: 99px;
   background: #8e7fb0;
 }
+
+/* ---------- Geld im Stil des Prototyps ---------- */
+
+.money-hero {
+  background: #fffaf0;
+  border-radius: 26px;
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(94, 60, 25, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

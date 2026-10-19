@@ -56,6 +56,9 @@ export function Geld() {
   const spent = monthExpenses.reduce((s, e) => s + e.amount, 0)
   const fixedTotal = budget.fixed.reduce((s, f) => s + f.amount, 0)
   const free = budget.limit - fixedTotal - spent
+  const lastDay = new Date(Number(today.slice(0, 4)), Number(today.slice(5, 7)), 0).getDate()
+  const daysLeft = Math.max(1, lastDay - Number(today.slice(8, 10)) + 1)
+  const perDay = Math.max(0, free) / daysLeft
 
   async function addExpense() {
     const value = Number(amount.replace(',', '.'))
@@ -85,13 +88,21 @@ export function Geld() {
   return (
     <section className="stack">
       <header>
+        <p className="subtitle">{formatDay(today, { month: 'long', year: 'numeric' })} · noch {daysLeft} Tage</p>
         <h1 className="title">Geld</h1>
-        <p className="subtitle">{formatDay(today, { month: 'long', year: 'numeric' })}</p>
       </header>
 
-      <div className="card">
-        <p className="muted">Noch frei diesen Monat</p>
-        <p className="big-number">{money(free)}</p>
+      <div className="money-hero">
+        <div className="row between" style={{ alignItems: 'flex-end' }}>
+          <div>
+            <p className="muted" style={{ margin: 0 }}>Noch frei diesen Monat</p>
+            <p className="big-number">{money(free)}</p>
+          </div>
+          <div style={{ textAlign: 'right', fontSize: 13, color: '#6b5340' }}>
+            <div><b>{money(perDay)}</b> pro Tag</div>
+            <div>bis Monatsende</div>
+          </div>
+        </div>
         <div className="progress terra" style={{ marginTop: 8 }}>
           <span style={{ width: `${Math.min(100, Math.max(0, ((spent + fixedTotal) / budget.limit) * 100))}%` }} />
         </div>
