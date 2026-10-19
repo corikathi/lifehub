@@ -1140,3 +1140,93 @@ textarea {
   flex-direction: column;
   gap: 12px;
 }
+
+/* ---------- Woche im Stil des Prototyps ---------- */
+
+.week-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-top: 2px;
+}
+
+.day-panel {
+  padding: 16px 16px 6px;
+  border-radius: 24px;
+}
+
+.panel-title {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0 0 6px;
+}
+
+.timeline-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  padding: 10px 0;
+  border-top: 1px dashed #ecdcc0;
+}
+
+.timeline-time {
+  width: 46px;
+  flex: none;
+  font-weight: 700;
+  font-size: 14px;
+  color: #6b5340;
+  padding-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-event {
+  flex: 1;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: #f7e2b5;
+  color: #6b4a1e;
+}
+
+.plan-list {
+  padding: 6px 14px;
+  border-radius: 24px;
+}
+
+.plan-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px dashed #ecdcc0;
+}
+
+.plan-row:last-child {
+  border-bottom: none;
+}
+
+.plan-day {
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.plan-chip {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-chip.meal {
+  background: #f7e2b5;
+  color: #7a561a;
+}
+
+.plan-chip.training {
+  background: #dce8ea;
+  color: #3f5a66;
+}
