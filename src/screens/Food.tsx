@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useKv } from '../lib/store'
 import { Hunger } from './Hunger'
+import { ShoppingList } from '../components/ShoppingList'
 import { EssenOverview } from './EssenOverview'
 import { addDays, dateKey, formatDay, weekDays } from '../lib/dates'
 import {
@@ -100,11 +101,14 @@ export function Food() {
 
       <div className="segmented" role="tablist">
         <button type="button" className={view === 'plan' ? 'active' : ''} onClick={() => setView('plan')}>Wochenplan</button>
-        
+        <button type="button" className={view === 'shopping' ? 'active' : ''} onClick={() => setView('shopping')}>Einkaufsliste</button>
         <button type="button" className={view === 'hunger' ? 'active' : ''} onClick={() => setView('hunger')}>Heißhunger</button>
       </div>
 
       {view === 'hunger' && <Hunger />}
+      {view === 'shopping' && content && (
+        <ShoppingList content={content} slots={[0, 1, 2, 3, 4, 5, 6].map(slotFor)} persons={meals.persons} monday={weekStart} />
+      )}
 
       {view === 'plan' && (
         <>
