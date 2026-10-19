@@ -34,7 +34,6 @@ function removeMealsCard(html: string): string {
 
 // Vorlage aufteilen: oben kcal und Makros, unten Mahlzeiten und Rest
 const SPLIT = ESSEN.lastIndexOf('<div', ESSEN.indexOf('Mahlzeiten heute'))
-const CONTAINER_OPEN = ESSEN.slice(0, ESSEN.indexOf('>') + 1)
 const PART_TOP = ESSEN.slice(0, SPLIT) + '</div>'
 const PART_BOTTOM = removeMealsCard(ESSEN.slice(SPLIT)).replace(/<\/div>\s*$/, '')
 
