@@ -213,8 +213,8 @@ export function EssenOverview() {
 
   return (
     <>
-      <Suche />
       <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
+      <Suche />
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
       <PrototypeScreen template={PART_BOTTOM} ctx={ctx} onAct={handleAct} />
     </>
