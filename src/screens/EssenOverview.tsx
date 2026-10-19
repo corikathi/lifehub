@@ -127,7 +127,6 @@ export function EssenOverview() {
   const waterCtx = { glasses, waterText: `${filled} / ${GLASSES} Gläser` }
 
   const weekProtein = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.protein, 0))
-  const weekKcal = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.kcal, 0))
   const recentWeights = [...(measures.log ?? [])].slice(-7)
   const latest = recentWeights[recentWeights.length - 1]?.gewicht
   const first = recentWeights[0]?.gewicht
