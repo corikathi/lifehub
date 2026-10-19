@@ -120,10 +120,11 @@ export function EssenOverview() {
 
   // Wochen-Werte für Diagramme
   const todayWater = (drinks[today] ?? []).reduce((s, d) => s + d.ml, 0)
-  const GLASSES = 8
+  const GLASSES = 12
+  const GOAL_LITERS = 3
   const filled = Math.min(GLASSES, Math.floor(todayWater / 250))
   const glasses = Array.from({ length: GLASSES }, (_, i) => ({ bg: i < filled ? '#7fa9b8' : '#fffaf0', tap: 'water:add' }))
-  const waterCtx = { glasses, waterText: `${filled} / ${GLASSES} Gläser` }
+  const waterCtx = { glasses, waterText: `${(todayWater / 1000).toFixed(1)} / ${GOAL_LITERS} L` }
 
   const weekProtein = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.protein, 0))
   const weekKcal = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.kcal, 0))

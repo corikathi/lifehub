@@ -10,7 +10,8 @@ import { defaultSlot, findRecipe, type TrainingFile } from '../lib/content'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'money' | 'more'
 
-const GLASSES = 8
+const GLASSES = 12 // 12 Gläser à 250 ml = 3 Liter
+const GOAL_LITERS = 3
 const GLASS_ML = 250
 const DAY_LETTERS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
@@ -67,8 +68,8 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
       ? `Heute stehen noch ${habits.length - doneCount} Gewohnheiten an. Fang mit „${openHabit.name}“ an.`
       : 'Alle Gewohnheiten für heute erledigt. Jetzt darfst du auf dem Sofa liegen, so wie ich.',
     filled < GLASSES
-      ? `Du hast ${filled} von ${GLASSES} Gläsern Wasser getrunken. Ich trinke auch gleich was.`
-      : 'Acht Gläser Wasser, perfekt.',
+      ? `Du hast ${(water / 1000).toFixed(1)} von ${GOAL_LITERS} Litern getrunken. Ich trinke auch gleich was.`
+      : 'Drei Liter, perfekt. Das hast du geschafft.',
     'Wenn es dir zu viel wird: die Ruhe-Ecke ist nur einen Tipp entfernt. Ich bleib bei dir.',
   ]
 
@@ -129,7 +130,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     taskCount: `${taskList.length} heute`,
     tasks: taskList,
     glasses: glassTiles,
-    waterText: `${filled} / ${GLASSES} Gläser`,
+    waterText: `${(water / 1000).toFixed(1)} / ${GOAL_LITERS} L`,
     mascotMsg: mochiMessages[mIdx % mochiMessages.length],
     nextMsg: 'mochi:next',
   }
