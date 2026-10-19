@@ -4,6 +4,7 @@ import { db } from '../db'
 import { useKv } from '../lib/store'
 import { addDays, dateKey, formatDay, weekDays } from '../lib/dates'
 import { DAYS, defaultSlot, findRecipe, type RezepteFile, type TrainingFile } from '../lib/content'
+import { GuidedWorkout } from '../components/GuidedWorkout'
 
 const DAY_LETTERS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
@@ -83,6 +84,8 @@ export function Calendar() {
           )
         })}
       </div>
+
+      {trainingContent && <GuidedWorkout training={trainingContent} />}
 
       <div className="card day-panel">
         <h2 className="panel-title">{selectedName}</h2>
