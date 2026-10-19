@@ -4,6 +4,7 @@ import { dateKey } from '../lib/dates'
 import { forGrams, lookupBarcode, searchFood, type FoodHit, type NutriEntry } from '../lib/nutrition'
 
 // Lebensmittel-Suche oben im Essen-Tab (wie Yazio): suchen, Barcode scannen oder eintippen.
+// Eigene Lebensmittel werden zuerst gezeigt und lassen sich anlegen, wenn die Datenbank nichts findet.
 type Detector = { detect: (source: HTMLVideoElement) => Promise<{ rawValue: string }[]> }
 type DetectorCtor = new (opts: { formats: string[] }) => Detector
 
@@ -13,34 +14,49 @@ function getDetector(): Detector | null {
   return new Ctor({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] })
 }
 
+const EMPTY_OWN = { name: '', kcal: '', protein: '', carbs: '', fat: '' }
+
 export function Suche() {
   const today = dateKey()
   const [log, setLog] = useKv<Record<string, NutriEntry[]>>('nutriLog', {})
+  const [myFoods, setMyFoods] = useKv<FoodHit[]>('myFoods', [])
   const [goal, setGoal] = useKv<number>('kcalGoal', 2000)
   const [query, setQuery] = useState('')
-  const [hits, setHits] = useState<FoodHit[]>([])
+  const [onlineHits, setOnlineHits] = useState<FoodHit[]>([])
+  const [searched, setSearched] = useState(false)
   const [picked, setPicked] = useState<FoodHit | null>(null)
   const [grams, setGrams] = useState('100')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [scanning, setScanning] = useState(false)
   const [code, setCode] = useState('')
+  const [creating, setCreating] = useState(false)
+  const [own, setOwn] = useState(EMPTY_OWN)
   const videoRef = useRef<HTMLVideoElement>(null)
   const hasDetector = typeof window !== 'undefined' && !!(window as unknown as { BarcodeDetector?: unknown }).BarcodeDetector
+
+  // Eigene Lebensmittel zuerst, dann die Online-Treffer
+  const q = query.trim().toLowerCase()
+  const ownHits = q.length >= 2 ? myFoods.filter((f) => f.name.toLowerCase().includes(q)) : []
+  const hits = [...ownHits, ...onlineHits]
 
   // Suche mit kurzer Pause
   useEffect(() => {
     if (query.trim().length < 2) {
-      setHits([])
+      setOnlineHits([])
+      setSearched(false)
       return
     }
     const t = setTimeout(() => {
       setBusy(true)
       setError(null)
       searchFood(query)
-        .then(setHits)
-        .catch(() => setError('Die Suche ist gerade nicht erreichbar.'))
-        .finally(() => setBusy(false))
+        .then(setOnlineHits)
+        .catch(() => setError('Die Online-Suche ist gerade nicht erreichbar. Eigene Lebensmittel funktionieren trotzdem.'))
+        .finally(() => {
+          setBusy(false)
+          setSearched(true)
+        })
     }, 400)
     return () => clearTimeout(t)
   }, [query])
@@ -104,8 +120,7 @@ export function Suche() {
   }
 
   const entries = log[today] ?? []
-  const sum = (k: 'kcal' | 'protein' | 'carbs' | 'fat') => entries.reduce((s, e) => s + e[k], 0)
-  const kcalEaten = sum('kcal')
+  const kcalEaten = entries.reduce((s, e) => s + e.kcal, 0)
   const kcalLeft = goal - kcalEaten
 
   async function add() {
@@ -116,12 +131,31 @@ export function Suche() {
     await setLog({ ...log, [today]: [...entries, entry] })
     setPicked(null)
     setQuery('')
-    setHits([])
+    setOnlineHits([])
+    setSearched(false)
     setCode('')
   }
 
   async function remove(id: string) {
     await setLog({ ...log, [today]: entries.filter((e) => e.id !== id) })
+  }
+
+  async function saveOwn() {
+    const name = (own.name || query).trim()
+    const kcal = Number(own.kcal.replace(',', '.'))
+    if (!name || !kcal) return
+    const food: FoodHit = {
+      name,
+      brand: 'Eigenes Lebensmittel',
+      kcal,
+      protein: Number(own.protein.replace(',', '.')) || 0,
+      carbs: Number(own.carbs.replace(',', '.')) || 0,
+      fat: Number(own.fat.replace(',', '.')) || 0,
+    }
+    await setMyFoods([...myFoods, food])
+    setPicked(food)
+    setCreating(false)
+    setOwn(EMPTY_OWN)
   }
 
   return (
@@ -166,6 +200,36 @@ export function Suche() {
             </button>
           ))}
 
+        {!picked && query.trim().length >= 2 && searched && !busy && hits.length === 0 && !creating && (
+          <div className="stack" style={{ gap: 8 }}>
+            <p className="muted" style={{ margin: 0 }}>Nichts gefunden.</p>
+            <button type="button" className="btn primary" onClick={() => { setCreating(true); setOwn({ ...EMPTY_OWN, name: query.trim() }) }}>
+              „{query.trim()}“ als eigenes Lebensmittel anlegen
+            </button>
+          </div>
+        )}
+
+        {creating && (
+          <form
+            className="form"
+            onSubmit={(e) => {
+              e.preventDefault()
+              void saveOwn()
+            }}
+          >
+            <p style={{ fontWeight: 700, margin: 0 }}>Eigenes Lebensmittel (Werte pro 100 g)</p>
+            <input className="input" placeholder="Name" value={own.name} onChange={(e) => setOwn({ ...own, name: e.target.value })} />
+            <input className="input" inputMode="decimal" placeholder="kcal" value={own.kcal} onChange={(e) => setOwn({ ...own, kcal: e.target.value })} />
+            <input className="input" inputMode="decimal" placeholder="Protein (g)" value={own.protein} onChange={(e) => setOwn({ ...own, protein: e.target.value })} />
+            <input className="input" inputMode="decimal" placeholder="Kohlenhydrate (g)" value={own.carbs} onChange={(e) => setOwn({ ...own, carbs: e.target.value })} />
+            <input className="input" inputMode="decimal" placeholder="Fett (g)" value={own.fat} onChange={(e) => setOwn({ ...own, fat: e.target.value })} />
+            <div className="row">
+              <button type="button" className="btn ghost" onClick={() => setCreating(false)}>Abbrechen</button>
+              <button type="submit" className="btn primary" style={{ flex: 1 }} disabled={!own.kcal.trim()}>Speichern</button>
+            </div>
+          </form>
+        )}
+
         {picked && (
           <form
             className="form"
@@ -188,18 +252,15 @@ export function Suche() {
 
       <div className="card">
         <div className="row between">
-          <div>
-            <p className="muted" style={{ margin: 0 }}>Noch übrig heute</p>
-            <p className="big-number">{kcalLeft} <span style={{ fontSize: 18 }}>kcal</span></p>
-          </div>
+          <p className="section-heading" style={{ fontSize: 18, margin: 0 }}>Heute gegessen</p>
           <div style={{ textAlign: 'right', fontSize: 13, color: '#6b5340' }}>
-            <div><b>{kcalEaten}</b> gegessen</div>
-            <div>
-              Ziel{' '}
+            <div>Ziel{' '}
               <input className="input" style={{ maxWidth: 90, textAlign: 'right', display: 'inline-block' }} inputMode="numeric" value={goal} onChange={(e) => setGoal(Number(e.target.value) || 0)} aria-label="Kalorienziel" />
             </div>
+            <div><b>{kcalLeft}</b> kcal übrig</div>
           </div>
         </div>
+        {entries.length === 0 && <p className="empty">Noch nichts eingetragen.</p>}
         {entries.length > 0 && (
           <div className="stack" style={{ gap: 6, marginTop: 10 }}>
             {entries.map((e) => (
