@@ -11,8 +11,7 @@ const STATUS_TEXT: Record<SyncStatus, string> = {
 }
 
 // Erkennt, welche Datei hochgeladen wurde, und speichert sie an der richtigen Stelle.
-async function importFile(file: File): Promise<string> {
-  const data = JSON.parse(await file.text()) as Record<string, unknown>
+async function importData(data: Record<string, unknown>): Promise<string> {
 
   if (Array.isArray(data.rezepte) && data.basics_einkauf) {
     await writeKv('content.rezepte', data)
@@ -70,10 +69,29 @@ async function importFile(file: File): Promise<string> {
   return `Persönliche Daten (${keys.length} Bereiche)`
 }
 
+async function importFile(file: File): Promise<string> {
+  return importData(JSON.parse(await file.text()) as Record<string, unknown>)
+}
+
 export function More({ email }: { email?: string }) {
   const [status, setStatus] = useState<SyncStatus>('idle')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [pasteText, setPasteText] = useState('')
+
+  async function importPasted() {
+    setBusy(true)
+    setMessage(null)
+    try {
+      const result = await importData(JSON.parse(pasteText) as Record<string, unknown>)
+      setMessage('Importiert: ' + result)
+      setPasteText('')
+    } catch {
+      setMessage('Der Text ist kein gültiges Rezept-Format.')
+    } finally {
+      setBusy(false)
+    }
+  }
   const [content] = useKv<unknown>('content.rezepte', null)
   const [training] = useKv<unknown>('content.training', null)
 
@@ -127,6 +145,12 @@ export function More({ email }: { email?: string }) {
         <p className="muted" style={{ marginTop: 6 }}>
           Rezepte: {content ? 'geladen ✓' : 'fehlt'} · Training: {training ? 'geladen ✓' : 'fehlt'}
         </p>
+        <div className="section-title" style={{ margin: '12px 0 6px' }}>Oder Text einfügen</div>
+        <textarea className="textarea" style={{ minHeight: 120 }} placeholder="Rezepte im Textformat hier einfügen" value={pasteText} onChange={(e) => setPasteText(e.target.value)} aria-label="Rezepte einfügen" />
+        <button type="button" className="btn primary" style={{ marginTop: 6 }} disabled={busy || !pasteText.trim()} onClick={importPasted}>
+          Einfügen und speichern
+        </button>
+
         <label className="btn primary file-btn" style={{ marginTop: 10 }}>
           Dateien auswählen
           <input
