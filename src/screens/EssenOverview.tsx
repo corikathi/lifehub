@@ -61,7 +61,7 @@ const PART_TOP = ESSEN.slice(0, SPLIT) + '</div>'
 const PART_BOTTOM = removeMealsCard(ESSEN.slice(SPLIT)).replace(/<\/div>\s*$/, '')
 
 // Unterer Teil in drei Stücke: vor der Gewichtskarte, die Karten-Reihe, danach
-const GEW_CARD = PART_BOTTOM.indexOf('Gewicht</p>')
+const GEW_CARD = PART_BOTTOM.indexOf('{{ pg.name }}')
 const GRID_START = PART_BOTTOM.lastIndexOf('<div', PART_BOTTOM.lastIndexOf('<div', GEW_CARD) - 1)
 const GRID_END = blockEnd(PART_BOTTOM, GRID_START)
 const PART_BOTTOM_A = PART_BOTTOM.slice(0, GRID_START)
