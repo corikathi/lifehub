@@ -12,6 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
+        // Feste Kennung, damit Chrome die Installation eindeutig zuordnet
+        id: process.env.GITHUB_ACTIONS ? '/lifehub/' : '/',
         name: 'Lifehub',
         short_name: 'Lifehub',
         description: 'Dein gemütliches Zuhause für Alltag, Essen und Training',
