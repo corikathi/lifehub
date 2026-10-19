@@ -14,7 +14,7 @@ import { db } from './db'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { BowlIcon, CalendarIcon, CoinIcon, DumbbellIcon, HomeIcon, PotIcon } from './components/Icons'
 import { Geld } from './screens/Geld'
-import { Sos } from './screens/Sos'
+import { Ruhe } from './screens/Ruhe'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'money' | 'more'
 
@@ -66,7 +66,7 @@ function App() {
   return (
     <div className="app">
       <main className="screen">
-        {sosOpen && <Sos onClose={() => setSosOpen(false)} />}
+        {sosOpen && <Ruhe onClose={() => setSosOpen(false)} />}
         {!sosOpen && tab === 'today' && <Today onNavigate={setTab} onOpenSos={() => setSosOpen(true)} />}
         {tab === 'calendar' && <Calendar />}
         {tab === 'food' && <Food />}

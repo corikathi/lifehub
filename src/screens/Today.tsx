@@ -119,7 +119,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
         <p className="muted" style={{ marginTop: 6 }}>Noch {nextUnlock} XP bis zum nächsten Möbelstück.</p>
       </div>
 
-      <button type="button" className="sos-btn" onClick={onOpenSos}>Hilfe bei Panik oder Heißhunger</button>
+      <button type="button" className="sos-btn" onClick={onOpenSos}>Ruhe-Ecke</button>
 
       <div className="section-title">Termine heute</div>
       <div className="stack" style={{ gap: 10 }}>
