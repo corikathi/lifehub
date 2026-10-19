@@ -31,7 +31,7 @@ export function PrototypeScreen({
     root.innerHTML = html
     lastHtml.current = html
     if (focusKey) {
-      const el = root.querySelector<HTMLInputElement>(`input[data-change="${focusKey}"]`)
+      const el = root.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-change="${focusKey}"]`)
       if (el) {
         el.focus()
         if (caret !== null) el.setSelectionRange(caret, caret)

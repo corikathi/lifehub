@@ -9,7 +9,13 @@ export const SHEET = `<sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ fa
 <button data-act="{{ k.pick }}" style="border:none;border-radius:99px;padding:9px 14px;font-weight:700;font-size:14px;cursor:pointer;background:{{ k.bg }};color:{{ k.ink }}">{{ k.name }}</button>
 </sc-for>
 </div>
+<sc-if value="{{ notRezept }}" hint-placeholder-val="{{ false }}">
 <input value="{{ draft }}" data-change="{{ setDraft }}" placeholder="{{ draftPh }}" style="height:50px;border:1.5px solid #ecdcc0;border-radius:16px;background:#f9f1e2;padding:0 14px;font-size:16px;outline:none">
+</sc-if>
+<sc-if value="{{ isRezept }}" hint-placeholder-val="{{ false }}">
+<textarea data-change="{{ setDraft }}" placeholder="{{ draftPh }}" style="min-height:200px;border:1.5px solid #ecdcc0;border-radius:16px;background:#f9f1e2;padding:12px 14px;font-size:16px;line-height:1.4;outline:none;resize:vertical;font-family:inherit">{{ draft }}</textarea>
+<p style="margin:0;font-size:12px;color:#8d7459">Ich erkenne Titel, Zutaten (Menge und Einheit) und Zubereitung. Nährwerte werden übernommen, wenn sie im Text stehen.</p>
+</sc-if>
 <sc-if value="{{ isAusgabe }}" hint-placeholder-val="{{ false }}">
 <input value="{{ draftAmount }}" data-change="{{ setAmount }}" inputMode="decimal" placeholder="Betrag in €" style="height:50px;border:1.5px solid #ecdcc0;border-radius:16px;background:#f9f1e2;padding:0 14px;font-size:16px;outline:none">
 <div style="display:flex;gap:6px;flex-wrap:wrap">
