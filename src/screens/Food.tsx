@@ -4,6 +4,7 @@ import { useRecipes } from '../lib/recipes'
 import { Hunger } from './Hunger'
 import { ShoppingList } from '../components/ShoppingList'
 import { RecipeForm } from '../components/RecipeForm'
+import { NutriEdit } from '../components/NutriEdit'
 import { NutriCalc } from '../components/NutriCalc'
 import { EssenOverview } from './EssenOverview'
 import { addDays, dateKey, formatDay, weekDays } from '../lib/dates'
@@ -105,6 +106,7 @@ export function Food() {
       )}
       {section === 'rezepte' && (
         <>
+          <NutriEdit />
           <RecipeForm />
           <NutriCalc />
         </>

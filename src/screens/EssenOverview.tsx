@@ -57,7 +57,11 @@ function blockEnd(s: string, start: number): number {
 
 // Vorlage aufteilen: oben kcal und Makros, unten Mahlzeiten und Rest
 const SPLIT = ESSEN.lastIndexOf('<div', ESSEN.indexOf('Mahlzeiten heute'))
-const PART_TOP = ESSEN.slice(0, SPLIT) + '</div>'
+// Die Rezeptkarte steht auf der Heute-Seite nach der Eintragung, nicht oben
+const RECIPE_START = ESSEN.indexOf('<div style="background:#f3c25e')
+const RECIPE_END = blockEnd(ESSEN, RECIPE_START)
+const RECIPE_CARD = ESSEN.slice(RECIPE_START, RECIPE_END)
+const PART_TOP = ESSEN.slice(0, RECIPE_START) + ESSEN.slice(RECIPE_END, SPLIT) + '</div>'
 const PART_BOTTOM = removeMealsCard(ESSEN.slice(SPLIT)).replace(/<\/div>\s*$/, '')
 
 // Unterer Teil in drei Stücke: vor der Gewichtskarte, die Karten-Reihe, danach
@@ -256,6 +260,7 @@ export function EssenOverview({ part }: { part: 'heute' | 'trend' }) {
         <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
         <PlannedMeal />
         <Suche />
+        <PrototypeScreen template={RECIPE_CARD} ctx={ctx} onAct={handleAct} />
       </>
     )
   }
