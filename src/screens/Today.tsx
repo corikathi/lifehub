@@ -6,6 +6,7 @@ import { defaultSlot, findRecipe, type RezepteFile, type TrainingFile } from '..
 import { addDays, dateKey, formatDay, greeting, streakOf, weekDays } from '../lib/dates'
 import { CozyScene } from '../components/CozyScene'
 import { Abendplan } from '../components/Abendplan'
+import { MochiBubble } from '../components/MochiBubble'
 
 type Tab = 'today' | 'calendar' | 'food' | 'training' | 'more'
 
@@ -80,6 +81,18 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   const sleepKnown = sleepValues.filter((v): v is number => typeof v === 'number')
   const sleepAvg = sleepKnown.length ? sleepKnown.reduce((s, v) => s + v, 0) / sleepKnown.length : undefined
 
+  // Nachrichten von Mochi: wechseln je nach Stand des Tages
+  const openHabit = habits.find((h) => h.id !== undefined && !doneToday(h.id))
+  const mochiMessages = [
+    openHabit
+      ? `Heute stehen noch ${habits.length - doneCount} Gewohnheiten an. Fang mit „${openHabit.name}“ an.`
+      : 'Alle Gewohnheiten für heute erledigt. Jetzt darfst du auf dem Sofa liegen, so wie ich.',
+    filledGlasses < GLASSES
+      ? `Du hast ${filledGlasses} von ${GLASSES} Gläsern Wasser getrunken. Ich trinke auch gleich was.`
+      : 'Acht Gläser Wasser, perfekt.',
+    'Wenn es dir zu viel wird: die Ruhe-Ecke ist nur einen Tipp entfernt. Ich bleib bei dir.',
+  ]
+
   // Punkte fürs Zimmer: erledigte Gewohnheiten und Abendplan
   const maxPoints = habits.length + 5
   const points = doneCount
@@ -118,6 +131,8 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
         <div className="progress room-progress"><span style={{ width: `${Math.min(100, (points / maxPoints) * 100)}%` }} /></div>
         <p className="muted" style={{ marginTop: 6 }}>Noch {nextUnlock} XP bis zum nächsten Möbelstück.</p>
       </div>
+
+      <MochiBubble messages={mochiMessages} />
 
       <button type="button" className="sos-btn" onClick={onOpenSos}>Ruhe-Ecke</button>
 

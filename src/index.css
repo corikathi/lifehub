@@ -1436,3 +1436,52 @@ textarea {
   gap: 8px;
   align-items: center;
 }
+
+/* ---------- Mochi im Stil des Prototyps ---------- */
+
+.mochi-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 4px 0 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mochi-cat {
+  width: 92px;
+  height: auto;
+  flex: none;
+  display: block;
+}
+
+.mochi-bubble {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  background: #fffaf0;
+  border-radius: 22px 22px 22px 6px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 18px rgba(94, 60, 25, 0.08);
+  margin-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mochi-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: #c9764a;
+  letter-spacing: 0.3px;
+}
+
+.mochi-text {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #4a3828;
+}
