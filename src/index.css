@@ -873,3 +873,258 @@ textarea {
   font-weight: 600;
   margin: 4px 0 0;
 }
+
+/* ---------- Heute im Stil des Prototyps ---------- */
+
+.level-bubble {
+  width: 50px;
+  height: 50px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: #4a3828;
+}
+
+.level-num {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 19px;
+}
+
+.level-label {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  margin-top: 2px;
+}
+
+.week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.week-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.week-letter {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.week-date {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--surface-2);
+}
+
+.week-date.today {
+  background: var(--sage);
+  color: #fffaf0;
+}
+
+.room-card {
+  padding: 14px 16px 16px;
+}
+
+.room-title {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.room-progress {
+  height: 10px;
+  background: #efe2c9;
+}
+
+.room-progress > span {
+  background: #8fa35a;
+}
+
+.event-card {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 12px 14px;
+  box-shadow: 0 3px 10px rgba(94, 60, 25, 0.06);
+}
+
+.event-time {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--text-soft);
+  min-width: 48px;
+  font-variant-numeric: tabular-nums;
+}
+
+.habit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.habit-tile {
+  position: relative;
+  border-radius: 20px;
+  background: var(--surface-2);
+  box-shadow: 0 3px 10px rgba(94, 60, 25, 0.06);
+}
+
+.habit-tile.done {
+  background: #e7e9cf;
+}
+
+.habit-tile-main {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.habit-tile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.habit-tile-name {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.habit-tile-check {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid #8fa35a;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fffaf0;
+}
+
+.habit-tile.done .habit-tile-check {
+  background: #8fa35a;
+}
+
+.habit-tile-streak {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.habit-tile-del {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.mini-card {
+  border-radius: 24px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mini-card.water {
+  background: #dce8ea;
+}
+
+.mini-card.sleep {
+  background: #e6e0f0;
+}
+
+.mini-title {
+  font-weight: 800;
+  font-size: 14px;
+  color: #3f5a66;
+}
+
+.mini-card.sleep .mini-title {
+  color: #4f4566;
+}
+
+.mini-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: #3f5a66;
+}
+
+.mini-card.sleep .mini-sub {
+  color: #4f4566;
+}
+
+.glass-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.glass {
+  height: 34px;
+  border: none;
+  border-radius: 8px 8px 12px 12px;
+  background: #fffaf0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.glass.filled {
+  background: #7fb0c4;
+}
+
+.sleep-big {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 26px;
+  color: #4f4566;
+  line-height: 1;
+}
+
+.sleep-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 40px;
+}
+
+.sleep-bar {
+  flex: 1;
+  border-radius: 99px;
+  background: #8e7fb0;
+}
