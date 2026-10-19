@@ -1504,3 +1504,18 @@ textarea {
   padding: 9px 8px;
   font-size: 14px;
 }
+
+/* ---------- Nährwerte ---------- */
+.recipe-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  background: var(--surface-2);
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+}

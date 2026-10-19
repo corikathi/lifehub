@@ -68,6 +68,7 @@ export function EssenOverview() {
   const content = useRecipes()
   const [mealsState, setMealsState] = useKv<MealsState>('meals', { persons: 2, skip: {}, weeks: {} })
   const [nutri] = useKv<Record<string, NutriEntry[]>>('nutriLog', {})
+  const [recipeNutri] = useKv<Record<string, { kcal: number; protein: number; carbs: number; fat: number }>>('recipeNutrition', {})
   const [goal] = useKv<number>('kcalGoal', 2000)
   const [checked, setChecked] = useKv<Record<string, boolean>>('shoppingChecked', {})
   const [drinks, setDrinks] = useKv<Record<string, { ml: number; t: string; ts: number }[]>>('drinks', {})
@@ -138,8 +139,10 @@ export function EssenOverview() {
     rotationText: `Rotation Woche ${rotationWeek(monday)} von 4`,
     recipeTitle,
     recipeTag: 'Heute · Plan',
-    recipeInfo: recipe
-      ? `Für ${persons} Personen · ${recipe.zutaten_fuer_3.length} Zutaten · ${recipe.schritte.length} Schritte`
+    recipeInfo: recipe && recipeNutri[recipe.id]
+      ? 'Pro Portion: ' + recipeNutri[recipe.id].kcal + ' kcal · ' + recipeNutri[recipe.id].protein + ' g Protein · ' + recipeNutri[recipe.id].carbs + ' g KH · ' + recipeNutri[recipe.id].fat + ' g Fett'
+      : recipe
+      ? 'Für ' + persons + ' Personen · ' + recipe.zutaten_fuer_3.length + ' Zutaten · ' + recipe.schritte.length + ' Schritte'
       : todaySlot.startsWith('custom:') ? 'Eigenes Gericht' : 'Noch kein Rezept für heute',
     persons,
     lessP: 'persons:-1',

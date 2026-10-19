@@ -4,6 +4,7 @@ import { useRecipes } from '../lib/recipes'
 import { Hunger } from './Hunger'
 import { ShoppingList } from '../components/ShoppingList'
 import { RecipeForm } from '../components/RecipeForm'
+import { NutriCalc } from '../components/NutriCalc'
 import { EssenOverview } from './EssenOverview'
 import { addDays, dateKey, formatDay, weekDays } from '../lib/dates'
 import {
@@ -112,6 +113,7 @@ export function Food() {
       )}
 
       {view === 'plan' && <RecipeForm />}
+      {view === 'plan' && <NutriCalc />}
 
       {view === 'plan' && (
         <>

@@ -88,3 +88,27 @@ export async function lookupBarcode(code: string): Promise<FoodHit | null> {
     fat: Math.round((n['fat_100g'] ?? 0) * 10) / 10,
   }
 }
+
+// Gewicht einer Zutat in Gramm. Stück und Löffel sind Richtwerte, die sich anpassen lassen.
+const PIECE_GRAMS: [RegExp, number][] = [
+  [/zwiebel/i, 80],
+  [/paprika/i, 150],
+  [/zucchini/i, 200],
+  [/tomate/i, 120],
+  [/gurke/i, 300],
+  [/kartoffel/i, 100],
+  [/lauch/i, 100],
+  [/ei$|eier/i, 60],
+  [/zehe|knoblauch/i, 5],
+]
+
+export function unitGrams(name: string, menge: number, einheit: string): number {
+  const unit = einheit.trim().toLowerCase()
+  if (unit === 'g' || unit === 'ml') return menge
+  if (unit === 'el') return menge * 15
+  if (unit === 'tl') return menge * 5
+  if (unit === 'zehe' || unit === 'zehen') return menge * 5
+  // Stück, Stangen und ähnliches
+  const hit = PIECE_GRAMS.find(([re]) => re.test(name))
+  return menge * (hit ? hit[1] : 100)
+}
