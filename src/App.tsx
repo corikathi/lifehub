@@ -147,6 +147,10 @@ function App() {
     const today = dateKey()
     if (sheet.kind === 'Ausgabe') {
       const amount = Number(sheet.amount.replace(',', '.')) || 0
+      if (amount <= 0) {
+        window.alert('Bitte einen Betrag über 0 eingeben.')
+        return
+      }
       const budget = normalizeBudget(await readKv<unknown>('budget', DEFAULT_BUDGET))
       await writeKv('budget', {
         ...budget,

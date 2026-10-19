@@ -3,14 +3,16 @@ import { useKv } from '../lib/store'
 import { dateKey, formatDay } from '../lib/dates'
 import { BUDGET } from '../prototype/budget'
 import { PrototypeScreen } from '../components/PrototypeScreen'
-import { DEFAULT_BUDGET, eur, normalizeBudget, type BudgetV2 } from '../lib/budget'
+import { BUDGET_START, DEFAULT_BUDGET, eur, normalizeBudget, type BudgetV2 } from '../lib/budget'
 
 const CAT_COLORS = ['#e8b04a', '#8aa3b3', '#a9ba74', '#c9764a', '#7b6b9c', '#a9998a']
 
 // Budget 1:1 aus dem Prototyp. Zahlen kommen aus unseren Daten.
 export function Geld({ onOpenSheet }: { onOpenSheet: (kind: string) => void }) {
   const today = dateKey()
-  const month = today.slice(0, 7)
+  // Vor dem Startmonat zeigt das Budget den Startmonat, ohne Ausgaben davor
+  const started = today.slice(0, 7) >= BUDGET_START
+  const month = started ? today.slice(0, 7) : BUDGET_START
   const [raw, setRaw] = useKv<unknown>('budget', DEFAULT_BUDGET)
   const budget = normalizeBudget(raw)
   const [editCats, setEditCats] = useState(false)
@@ -20,8 +22,9 @@ export function Geld({ onOpenSheet }: { onOpenSheet: (kind: string) => void }) {
   const spentIn = (name: string) => monthExpenses.filter((e) => e.cat === name).reduce((s, e) => s + e.amount, 0)
   const varSpent = budget.categories.reduce((s, c) => s + spentIn(c.name), 0)
   const free = Math.max(0, budget.avail - varSpent)
-  const lastDay = new Date(Number(today.slice(0, 4)), Number(today.slice(5, 7)), 0).getDate()
-  const daysLeft = Math.max(1, lastDay - Number(today.slice(8, 10)) + 1)
+  const [yearNum, monthNum] = month.split('-').map(Number)
+  const lastDay = new Date(yearNum, monthNum, 0).getDate()
+  const daysLeft = started ? Math.max(1, lastDay - Number(today.slice(8, 10)) + 1) : lastDay
   const { target, saved, monthly } = budget.saving
   const months = monthly > 0 ? Math.ceil(Math.max(0, target - saved) / monthly) : 0
 
@@ -87,5 +90,16 @@ export function Geld({ onOpenSheet }: { onOpenSheet: (kind: string) => void }) {
     }
   }
 
-  return <PrototypeScreen template={BUDGET} ctx={ctx} onAct={handleAct} onChange={handleChange} />
+  return (
+    <>
+      {!started && (
+        <div className="card">
+          <p style={{ margin: 0 }}>
+            Das Budget startet am 1. November 2026. Bis dahin werden Ausgaben nicht gezählt.
+          </p>
+        </div>
+      )}
+      <PrototypeScreen template={BUDGET} ctx={ctx} onAct={handleAct} onChange={handleChange} />
+    </>
+  )
 }

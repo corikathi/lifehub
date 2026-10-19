@@ -22,6 +22,9 @@ export interface BudgetV2 {
   expenses: BudgetExpense[]
 }
 
+// Ab diesem Monat zählt das Budget. Ausgaben davor werden nicht berechnet.
+export const BUDGET_START = '2026-11'
+
 export const DEFAULT_BUDGET: BudgetV2 = {
   avail: 1500,
   income: 2600,
