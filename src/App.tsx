@@ -20,7 +20,7 @@ type Tab = 'today' | 'calendar' | 'food' | 'training' | 'money' | 'more'
 
 const TABS: { id: Tab; label: string; Icon: ComponentType<{ size?: number }> }[] = [
   { id: 'today', label: 'Heute', Icon: HomeIcon },
-  { id: 'calendar', label: 'Kalender', Icon: CalendarIcon },
+  { id: 'calendar', label: 'Woche', Icon: CalendarIcon },
   { id: 'food', label: 'Essen', Icon: BowlIcon },
   { id: 'training', label: 'Training', Icon: DumbbellIcon },
   { id: 'money', label: 'Geld', Icon: CoinIcon },

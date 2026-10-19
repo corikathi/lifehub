@@ -11,6 +11,7 @@ import {
   type TrainingFile,
 } from '../lib/content'
 import { Ride } from './Ride'
+import { GuidedWorkout } from '../components/GuidedWorkout'
 
 type Section = 'plan' | 'kraft' | 'rad' | 'verlauf'
 
@@ -73,6 +74,8 @@ export function Training() {
         <h1 className="title">Training</h1>
         <p className="subtitle">Ein Schritt nach dem anderen. 💪</p>
       </header>
+
+      <GuidedWorkout training={content} />
 
       <div className="segmented" role="tablist">
         {SECTIONS.map((s) => (
