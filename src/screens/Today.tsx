@@ -49,9 +49,15 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     }
   }
 
-  async function addGlass() {
+  async function addWater(ml: number) {
     const list = drinks[today] ?? []
-    await setDrinks({ ...drinks, [today]: [...list, { ml: GLASS_ML, t: 'wasser', ts: Date.now() }] })
+    await setDrinks({ ...drinks, [today]: [...list, { ml, t: 'wasser', ts: Date.now() }] })
+  }
+
+  async function undoWater() {
+    const list = drinks[today] ?? []
+    if (list.length === 0) return
+    await setDrinks({ ...drinks, [today]: list.slice(0, -1) })
   }
 
   async function addHabit() {
@@ -136,7 +142,10 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   function handleAct(action: string) {
     if (action === 'nav:ruhe') onOpenSos()
     else if (action === 'nav:woche') onNavigate('calendar')
-    else if (action === 'water:add') void addGlass()
+    else if (action === 'water:add') void addWater(GLASS_ML)
+    else if (action === 'water:250') void addWater(250)
+    else if (action === 'water:500') void addWater(500)
+    else if (action === 'water:undo') void undoWater()
     else if (action === 'mochi:next') setMIdx((i) => i + 1)
     else if (action === 'nav:mehr') onNavigate('more')
     else if (action.startsWith('todo:')) {
