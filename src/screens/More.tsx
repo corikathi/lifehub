@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { onSyncStatus, signOutAndClear, type SyncStatus } from '../lib/sync'
 import { readKv, useKv, writeKv } from '../lib/store'
 import type { Rezept } from '../lib/content'
+import { parseRecipeText } from '../lib/recipeText'
 
 const STATUS_TEXT: Record<SyncStatus, string> = {
   idle: 'Bereit',
@@ -91,11 +92,19 @@ export function More({ email }: { email?: string }) {
     setBusy(true)
     setMessage(null)
     try {
-      const result = await importData(JSON.parse(cleanPaste(pasteText)) as Record<string, unknown>)
+      const looksJson = pasteText.includes('{')
+      let result: string
+      if (looksJson) {
+        result = await importData(JSON.parse(cleanPaste(pasteText)) as Record<string, unknown>)
+      } else {
+        const parsed = parseRecipeText(pasteText)
+        if (parsed.length === 0) throw new Error('keine Rezepte gefunden')
+        result = await importData({ eigeneRezepte: parsed })
+      }
       setMessage('Importiert: ' + result)
       setPasteText('')
     } catch {
-      setMessage('Der Text ist kein gültiges Rezept-Format.')
+      setMessage('Keine Rezepte erkannt. Titel, Zutaten und Anleitung bitte wie im Beispiel anordnen.')
     } finally {
       setBusy(false)
     }
