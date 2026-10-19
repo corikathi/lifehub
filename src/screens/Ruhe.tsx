@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useKv } from '../lib/store'
 import { dateKey } from '../lib/dates'
 
-// Ruhe-Ecke im Stil des Prototyps: Atmen, Erden, Sätze, Tic-Tac-Toe, Blasen
+// Ruhe-Ecke im Stil des Prototyps: Atmen, Erden, beruhigende Sätze
 // und die Notfallnummern. Eigene Kontakte und Notizen bleiben unten erhalten.
 
 interface Contact {
@@ -16,7 +16,7 @@ interface PanicNote {
   text: string
 }
 
-type View = 'menu' | 'atmen' | 'erden' | 'saetze' | 'ttt' | 'blasen'
+type View = 'menu' | 'atmen' | 'erden' | 'saetze'
 
 const GROUNDING: [number, string, string][] = [
   [5, 'Nenne 5 Dinge, die du siehst', 'Schau dich langsam um. Eine Lampe, deine Hände, eine Farbe.'],
@@ -42,32 +42,6 @@ const BREATH: [string, number, number, string][] = [
   ['Halten', 2, 1, 'Ganz kurz halten, ohne Druck.'],
   ['Ausatmen', 6, 0.55, 'Durch den Mund, länger als das Einatmen.'],
 ]
-
-type Cell = 'X' | 'O' | null
-const LINES = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8],
-  [0, 3, 6], [1, 4, 7], [2, 5, 8],
-  [0, 4, 8], [2, 4, 6],
-]
-
-function winnerOf(board: Cell[]): Cell {
-  for (const [a, b, c] of LINES) {
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a]
-  }
-  return null
-}
-
-function computerMove(board: Cell[]): number {
-  const empty = board.map((c, i) => (c ? -1 : i)).filter((i) => i >= 0)
-  for (const mark of ['O', 'X'] as const) {
-    for (const i of empty) {
-      const trial = [...board]
-      trial[i] = mark
-      if (winnerOf(trial) === mark) return i
-    }
-  }
-  return empty[Math.floor(Math.random() * empty.length)]
-}
 
 export function Ruhe({ onClose }: { onClose: () => void }) {
   const [view, setView] = useState<View>('menu')
@@ -106,29 +80,6 @@ export function Ruhe({ onClose }: { onClose: () => void }) {
 
   // Sätze
   const [sIdx, setSIdx] = useState(0)
-
-  // Tic-Tac-Toe
-  const [board, setBoard] = useState<Cell[]>(Array(9).fill(null))
-  const [score, setScore] = useState({ du: 0, ich: 0 })
-  const winner = winnerOf(board)
-  const full = board.every(Boolean)
-
-  function tapCell(i: number) {
-    if (board[i] || winner || full) return
-    const next = [...board]
-    next[i] = 'X'
-    if (!winnerOf(next) && next.some((c) => !c)) {
-      next[computerMove(next)] = 'O'
-    }
-    setBoard(next)
-    const w = winnerOf(next)
-    if (w === 'X') setScore((s) => ({ ...s, du: s.du + 1 }))
-    if (w === 'O') setScore((s) => ({ ...s, ich: s.ich + 1 }))
-  }
-
-  // Blasen
-  const [bubbles, setBubbles] = useState<boolean[]>(Array(30).fill(false))
-  const popCount = bubbles.filter(Boolean).length
 
   async function addContact() {
     if (!name.trim() || !number.trim()) return
@@ -185,14 +136,6 @@ export function Ruhe({ onClose }: { onClose: () => void }) {
             <button type="button" className="ruhe-tile" onClick={() => setView('saetze')}>
               <span className="ruhe-tile-name">Beruhigende Sätze</span>
               <span className="ruhe-tile-sub">Zum langsamen Lesen</span>
-            </button>
-            <button type="button" className="ruhe-tile" onClick={() => setView('ttt')}>
-              <span className="ruhe-tile-name">Tic-Tac-Toe</span>
-              <span className="ruhe-tile-sub">Eine kurze Runde gegen mich</span>
-            </button>
-            <button type="button" className="ruhe-tile" onClick={() => setView('blasen')}>
-              <span className="ruhe-tile-name">Blasen ploppen</span>
-              <span className="ruhe-tile-sub">Tippen ohne Ziel</span>
             </button>
           </div>
 
@@ -364,47 +307,6 @@ export function Ruhe({ onClose }: { onClose: () => void }) {
         </div>
       )}
 
-      {view === 'ttt' && (
-        <div className="stack" style={{ gap: 14 }}>
-          <div className="row between">
-            <h1 className="title" style={{ margin: 0 }}>Tic-Tac-Toe</h1>
-            <span className="muted">Du {score.du} : {score.ich} Ich</span>
-          </div>
-          <p className="muted">
-            {winner === 'X' ? 'Du hast gewonnen!' : winner === 'O' ? 'Diesmal ich.' : full ? 'Unentschieden.' : 'Du bist dran.'}
-          </p>
-          <div className="ttt-grid">
-            {board.map((cell, i) => (
-              <button key={i} type="button" className="ttt-cell" onClick={() => tapCell(i)} aria-label={`Feld ${i + 1}`}>
-                {cell}
-              </button>
-            ))}
-          </div>
-          <button type="button" className="btn" onClick={() => setBoard(Array(9).fill(null))}>Neues Spiel</button>
-        </div>
-      )}
-
-      {view === 'blasen' && (
-        <div className="stack" style={{ gap: 14 }}>
-          <div className="row between">
-            <h1 className="title" style={{ margin: 0 }}>Blasen ploppen</h1>
-            <span className="muted">{popCount}</span>
-          </div>
-          <p className="muted">Langsam, eine nach der anderen. Kein Ziel, keine Zeit.</p>
-          <div className="bubble-grid">
-            {bubbles.map((popped, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`bubble ${popped ? 'popped' : ''}`}
-                aria-label="Blase"
-                onClick={() => setBubbles((b) => b.map((v, j) => (j === i ? true : v)))}
-              />
-            ))}
-          </div>
-          <button type="button" className="btn" onClick={() => setBubbles(Array(30).fill(false))}>Neue Blasen</button>
-        </div>
-      )}
     </section>
   )
 }
