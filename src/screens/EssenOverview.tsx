@@ -89,7 +89,7 @@ function line(values: number[], width = 100, height = 30): string {
 }
 
 // Essen 1:1 aus dem Prototyp, mit den Daten aus unserer App.
-export function EssenOverview() {
+export function EssenOverview({ part }: { part: 'heute' | 'trend' }) {
   const today = dateKey()
   const weekIndex = (new Date(`${today}T12:00:00`).getDay() + 6) % 7
   const monday = addDays(today, -weekIndex)
@@ -247,11 +247,19 @@ export function EssenOverview() {
     }
   }
 
+  // "heute": Tageswerte, geplante Mahlzeit und Eintragen. "trend": Wasser, Gewicht und Verlauf.
+  if (part === 'heute') {
+    return (
+      <>
+        <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
+        <PlannedMeal />
+        <Suche />
+      </>
+    )
+  }
+
   return (
     <>
-      <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
-      <PlannedMeal />
-      <Suche />
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         {PART_BOTTOM_A.trim() && <PrototypeScreen template={PART_BOTTOM_A} ctx={ctx} onAct={handleAct} />}

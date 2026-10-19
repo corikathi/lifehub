@@ -21,6 +21,9 @@ interface Unit {
   grams: number
 }
 
+// Feste Einheiten neben Gramm. Milch und die meisten Getränke wiegen etwa 1 g pro ml.
+const FIXED_UNITS: Unit[] = [{ name: 'ml', grams: 1 }]
+
 function getDetector(): Detector | null {
   const Ctor = (window as unknown as { BarcodeDetector?: DetectorCtor }).BarcodeDetector
   if (!Ctor) return null
@@ -155,7 +158,7 @@ export function Suche() {
 
   // Gramm aus Menge und Einheit berechnen
   const amountNumber = Number(amount.replace(',', '.')) || 0
-  const unitInfo = units.find((u) => u.name === unit)
+  const unitInfo = units.find((u) => u.name === unit) ?? FIXED_UNITS.find((u) => u.name === unit)
   const gramsNow = unit === 'g' ? amountNumber : amountNumber * (unitInfo?.grams ?? 0)
   const computedMacros = picked ? forGrams(picked, gramsNow) : { kcal: 0, protein: 0, carbs: 0, fat: 0 }
   const num = (v: string) => Number(v.replace(',', '.')) || 0
@@ -342,7 +345,12 @@ export function Suche() {
             <p style={{ fontWeight: 700, margin: 0 }}>{picked.name}</p>
             <div className="chips">
               <button type="button" className={`chip ${unit === 'g' ? 'active' : ''}`} onClick={() => { setUnit('g'); setAmount('100') }}>Gramm</button>
-              {units.map((u) => (
+              {FIXED_UNITS.map((u) => (
+                <button key={u.name} type="button" className={`chip ${unit === u.name ? 'active' : ''}`} onClick={() => { setUnit(u.name); setAmount('100') }}>
+                  {u.name}
+                </button>
+              ))}
+              {units.filter((u) => !FIXED_UNITS.some((f) => f.name === u.name)).map((u) => (
                 <button key={u.name} type="button" className={`chip ${unit === u.name ? 'active' : ''}`} onClick={() => { setUnit(u.name); setAmount('1') }}>
                   {u.name} ({u.grams} g)
                 </button>

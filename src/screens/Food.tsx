@@ -44,6 +44,7 @@ export function Food() {
   const [weekStart, setWeekStart] = useState(() => mondayOf(today))
   const [openDay, setOpenDay] = useState<number | null>(null)
   const [view, setView] = useState<'plan' | 'shopping' | 'hunger' | 'kcal'>('plan')
+  const [section, setSection] = useState<'heute' | 'woche' | 'rezepte' | 'trend'>('heute')
 
   const days = weekDays(weekStart)
   const skipped = meals.skip[weekStart] ?? []
@@ -51,7 +52,7 @@ export function Food() {
   if (!content) {
     return (
       <section className="stack">
-        <EssenOverview />
+        <EssenOverview part="heute" />
         <div className="card">
           <p className="muted">Noch keine Rezepte geladen. Importiere `rezepte.json` im Tab „Mehr“.</p>
         </div>
@@ -90,9 +91,24 @@ export function Food() {
 
   return (
     <section className="stack">
-      <EssenOverview />
+      <div className="segmented" role="tablist">
+        <button type="button" className={section === 'heute' ? 'active' : ''} onClick={() => setSection('heute')}>Heute</button>
+        <button type="button" className={section === 'woche' ? 'active' : ''} onClick={() => setSection('woche')}>Woche</button>
+        <button type="button" className={section === 'rezepte' ? 'active' : ''} onClick={() => setSection('rezepte')}>Rezepte</button>
+        <button type="button" className={section === 'trend' ? 'active' : ''} onClick={() => setSection('trend')}>Trend</button>
+      </div>
 
-      
+      {section === 'heute' && <EssenOverview part="heute" />}
+      {section === 'trend' && <EssenOverview part="trend" />}
+      {section === 'rezepte' && (
+        <>
+          <RecipeForm />
+          <NutriCalc />
+        </>
+      )}
+
+      {section === 'woche' && (
+        <>
       <div className="row between">
         <button type="button" className="btn ghost" onClick={() => setWeekStart(addDays(weekStart, -7))} aria-label="Vorwoche">←</button>
         <span className="muted">
@@ -111,9 +127,6 @@ export function Food() {
       {view === 'shopping' && content && (
         <ShoppingList content={content} slots={[0, 1, 2, 3, 4, 5, 6].map((i) => (skipped.includes(i) ? '' : slotFor(i)))} persons={meals.persons} monday={weekStart} />
       )}
-
-      {view === 'plan' && <RecipeForm />}
-      {view === 'plan' && <NutriCalc />}
 
       {view === 'plan' && (
         <>
@@ -190,8 +203,8 @@ export function Food() {
           })}
         </>
       )}
-
-      
+        </>
+      )}
     </section>
   )
 }

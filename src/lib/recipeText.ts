@@ -108,14 +108,17 @@ export function parseRecipeText(text: string): ParsedRecipe[] {
     const line = lines[i]
     if (!line) continue
     const next = lines.slice(i + 1).find((l) => l) ?? ''
-    const headingNut = /^nährwerte/i.test(line)
-    const headingZut = /^zutaten/i.test(line)
-    const headingAnl = /^(anleitung|zubereitung)/i.test(line)
+    // Überschriften auch mit Markdown (**, #) oder Doppelpunkt erkennen
+    const bare = line.replace(/^[#*_\s]+|[*_:\s]+$/g, '')
+    const headingNut = /^nährwerte/i.test(bare)
+    const headingZut = /^zutaten/i.test(bare)
+    const headingAnl = /^(anleitung|zubereitung)/i.test(bare)
     const isHeading = headingNut || headingZut || headingAnl
 
     if (!isHeading) {
       // Titelzeile erkennen: steht vor einem Abschnitt (Nährwerte oder Zutaten)
-      if (/^(nährwerte|zutaten)/i.test(next) && section !== 'naehr') {
+      // Zutat direkt vor "Nährwerte" ist keine Titelzeile, sondern gehört zu den Zutaten
+      if (/^(nährwerte|zutaten)/i.test(next) && section !== 'naehr' && section !== 'zutaten') {
         pendingTitle = cleanTitle(line)
         section = 'none'
         continue
@@ -124,7 +127,8 @@ export function parseRecipeText(text: string): ParsedRecipe[] {
     }
 
     if (headingNut) {
-      if (!current || current.zutaten.length > 0) current = startRecipe()
+      // Nährwerte nach den Zutaten gehören zum selben Rezept, nur ein neuer Abschnitt startet ein neues
+      if (!current || (current.zutaten.length > 0 && section !== 'zutaten')) current = startRecipe()
       mergeDefined(current as ParsedRecipe, parseNutrition(line))
       section = 'naehr'
       continue
@@ -144,7 +148,13 @@ export function parseRecipeText(text: string): ParsedRecipe[] {
       mergeDefined(current, parseNutrition(line))
     } else if (section === 'zutaten') {
       const ing = parseIngredient(line)
-      if (ing) current.zutaten.push(ing)
+      if (ing) {
+        current.zutaten.push(ing)
+      } else if (line.length > 25 || /[.!]$/.test(line)) {
+        // Ein langer Satz ohne Mengenangabe ist meist ein Zubereitungsschritt, auch ohne Überschrift
+        section = 'anleitung'
+        current.schritte.push(line.replace(/^\d+[.)]\s*/, '').trim())
+      }
     } else if (section === 'anleitung') {
       current.schritte.push(line.replace(/^\d+[.)]\s*/, '').trim())
     }

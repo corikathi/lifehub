@@ -1,10 +1,12 @@
 // Helle Scottish Fold im flachen Illustrationsstil: einfache Formen, klarer Umriss,
-// volle Farben ohne Verläufe. Sie schaut fröhlich, wenn der Tag gut läuft, und ruhig sonst.
+// volle Farben ohne Verläufe. Die Ohren sind klein und nach vorn gefaltet, der Kopf
+// ist rund mit Wangen. Sie schaut fröhlich, wenn der Tag gut läuft, und ruhig sonst.
 
 const LINE = '#5a4632'
 const FUR = '#f7efe2'
 const FUR_SHADE = '#ead9bf'
 const EAR_IN = '#f0c3b6'
+const NOSE = '#e0a08f'
 
 export function Cat({ x, y, happy }: { x: number; y: number; happy: boolean }) {
   return (
@@ -29,61 +31,66 @@ export function Cat({ x, y, happy }: { x: number; y: number; happy: boolean }) {
       />
 
       <g className="cat-breathe">
-        {/* Körper */}
-        <ellipse cx="0" cy="12" rx="19" ry="15" fill={FUR} stroke={LINE} strokeWidth="1.3" />
-        <ellipse cx="0" cy="18" rx="9" ry="6.5" fill={FUR_SHADE} />
+        {/* Körper: kompakt und rund */}
+        <ellipse cx="0" cy="13" rx="17" ry="13" fill={FUR} stroke={LINE} strokeWidth="1.3" />
+        <ellipse cx="0" cy="18" rx="8" ry="5.5" fill={FUR_SHADE} />
 
         {/* Pfoten */}
-        <ellipse cx="-9" cy="24" rx="6" ry="4" fill={FUR} stroke={LINE} strokeWidth="1.1" />
-        <ellipse cx="9" cy="24" rx="6" ry="4" fill={FUR} stroke={LINE} strokeWidth="1.1" />
+        <ellipse cx="-8" cy="24" rx="5.5" ry="3.8" fill={FUR} stroke={LINE} strokeWidth="1.1" />
+        <ellipse cx="8" cy="24" rx="5.5" ry="3.8" fill={FUR} stroke={LINE} strokeWidth="1.1" />
 
-        {/* Ohren: nach vorn geknickt und abgerundet */}
+        {/* Ohren: klein, nach vorn und unten geknickt, liegen am Kopf an */}
         <path
-          d="M-13 -9 C -18 -14, -17 -22, -10 -22 C -6 -22, -4 -16, -6 -10 Z"
+          d="M-13 -13 C -15 -18, -12 -21, -8 -20 C -5 -19, -4 -15, -5 -12 C -8 -11, -11 -11, -13 -13 Z"
           fill={FUR}
           stroke={LINE}
           strokeWidth="1.2"
           strokeLinejoin="round"
         />
         <path
-          d="M13 -9 C 18 -14, 17 -22, 10 -22 C 6 -22, 4 -16, 6 -10 Z"
+          d="M13 -13 C 15 -18, 12 -21, 8 -20 C 5 -19, 4 -15, 5 -12 C 8 -11, 11 -11, 13 -13 Z"
           fill={FUR}
           stroke={LINE}
           strokeWidth="1.2"
           strokeLinejoin="round"
         />
-        <path d="M-11.5 -12 C -13.5 -15, -13 -18, -10.5 -18.5 C -8.5 -18.5, -8 -15.5, -9 -13 Z" fill={EAR_IN} />
-        <path d="M11.5 -12 C 13.5 -15, 13 -18, 10.5 -18.5 C 8.5 -18.5, 8 -15.5, 9 -13 Z" fill={EAR_IN} />
+        <path d="M-10.5 -14.5 C -11.5 -17, -9.5 -18, -8.5 -17.5 C -7 -17, -7 -15, -8 -13.5 C -9.5 -13.5, -10.2 -14, -10.5 -14.5 Z" fill={EAR_IN} />
+        <path d="M10.5 -14.5 C 11.5 -17, 9.5 -18, 8.5 -17.5 C 7 -17, 7 -15, 8 -13.5 C 9.5 -13.5, 10.2 -14, 10.5 -14.5 Z" fill={EAR_IN} />
 
-        {/* Kopf */}
-        <circle cx="0" cy="-6" r="15.5" fill={FUR} stroke={LINE} strokeWidth="1.3" />
+        {/* Kopf: rund, mit vollen Wangen */}
+        <path
+          d="M0 -20 C 12 -20, 17 -12, 17 -3 C 17 7, 11 12, 0 12 C -11 12, -17 7, -17 -3 C -17 -12, -12 -20, 0 -20 Z"
+          fill={FUR}
+          stroke={LINE}
+          strokeWidth="1.3"
+        />
 
-        {/* Augen */}
+        {/* Augen: klein und tief gesetzt, wie bei einer Scottish Fold */}
         {happy ? (
           <>
-            <path d="M-9.5 -5.5 Q-6 -9.5 -2.5 -5.5" stroke={LINE} strokeWidth="1.6" fill="none" strokeLinecap="round" />
-            <path d="M2.5 -5.5 Q6 -9.5 9.5 -5.5" stroke={LINE} strokeWidth="1.6" fill="none" strokeLinecap="round" />
+            <path d="M-9 -1 Q-6 -4.5 -3 -1" stroke={LINE} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            <path d="M3 -1 Q6 -4.5 9 -1" stroke={LINE} strokeWidth="1.5" fill="none" strokeLinecap="round" />
           </>
         ) : (
           <>
-            <circle cx="-6" cy="-5.5" r="2.8" fill={LINE} />
-            <circle cx="6" cy="-5.5" r="2.8" fill={LINE} />
-            <circle cx="-5" cy="-6.6" r="0.9" fill="#fff" />
-            <circle cx="7" cy="-6.6" r="0.9" fill="#fff" />
+            <circle cx="-6" cy="-1" r="2.2" fill={LINE} />
+            <circle cx="6" cy="-1" r="2.2" fill={LINE} />
+            <circle cx="-5.3" cy="-1.8" r="0.7" fill="#fff" />
+            <circle cx="6.7" cy="-1.8" r="0.7" fill="#fff" />
           </>
         )}
 
         {/* Nase und Mund */}
-        <path d="M-1.6 -1.6 L1.6 -1.6 L0 0 Z" fill={LINE} />
-        <path d="M0 0 Q-1.6 1.8 -3.2 1" stroke={LINE} strokeWidth="0.8" fill="none" strokeLinecap="round" />
-        <path d="M0 0 Q1.6 1.8 3.2 1" stroke={LINE} strokeWidth="0.8" fill="none" strokeLinecap="round" />
+        <path d="M-1.8 3.2 Q0 2.2 1.8 3.2 Q0 5 -1.8 3.2 Z" fill={NOSE} stroke={LINE} strokeWidth="0.6" strokeLinejoin="round" />
+        <path d="M0 5 Q-1.4 6.8 -3.2 6" stroke={LINE} strokeWidth="0.8" fill="none" strokeLinecap="round" />
+        <path d="M0 5 Q1.4 6.8 3.2 6" stroke={LINE} strokeWidth="0.8" fill="none" strokeLinecap="round" />
 
         {/* Schnurrhaare */}
         <g stroke={LINE} strokeWidth="0.5" opacity="0.7">
-          <line x1="-8" y1="1" x2="-19" y2="0" />
-          <line x1="-8" y1="2.5" x2="-19" y2="3.5" />
-          <line x1="8" y1="1" x2="19" y2="0" />
-          <line x1="8" y1="2.5" x2="19" y2="3.5" />
+          <line x1="-9" y1="4.5" x2="-19" y2="3" />
+          <line x1="-9" y1="6" x2="-19" y2="7.5" />
+          <line x1="9" y1="4.5" x2="19" y2="3" />
+          <line x1="9" y1="6" x2="19" y2="7.5" />
         </g>
       </g>
 
