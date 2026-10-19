@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useKv } from '../lib/store'
 import { Hunger } from './Hunger'
 import { Kalorien } from './Kalorien'
+import { EssenOverview } from './EssenOverview'
 import { addDays, dateKey, formatDay, weekDays } from '../lib/dates'
 import {
   DAYS,
@@ -63,7 +64,7 @@ export function Food() {
   if (!content) {
     return (
       <section className="stack">
-        <h1 className="title">Essen</h1>
+        <EssenOverview />
         <div className="card">
           <p className="muted">Noch keine Rezepte geladen. Importiere `rezepte.json` im Tab „Mehr“.</p>
         </div>
@@ -115,6 +116,8 @@ export function Food() {
 
   return (
     <section className="stack">
+      <EssenOverview />
+
       <header>
         <h1 className="title">Essen</h1>
         <p className="subtitle">{formatDay(today)}</p>

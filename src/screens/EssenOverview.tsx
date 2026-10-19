@@ -1,0 +1,190 @@
+import { useKv } from '../lib/store'
+import { addDays, dateKey, weekDays } from '../lib/dates'
+import {
+  DAYS,
+  defaultSlot,
+  findRecipe,
+  rotationWeek,
+  scaleAmount,
+  type RezepteFile,
+} from '../lib/content'
+import { ESSEN } from '../prototype/essen'
+import { PrototypeScreen } from '../components/PrototypeScreen'
+import type { NutriEntry } from '../lib/nutrition'
+
+interface MealsState {
+  persons: number
+  skip: Record<string, number[]>
+  weeks: Record<string, string[]>
+}
+
+// Ziele für Makros. Der Prototyp hat keine Werte, diese sind Startwerte und lassen sich im Code ändern.
+const TARGET_PROTEIN = 140
+const TARGET_CARBS = 220
+const TARGET_FAT = 70
+const REST_DAY_MINUS = 300
+
+const dayLabel = (i: number) => DAYS[i] ?? ''
+
+function line(values: number[], width = 100, height = 30): string {
+  if (values.length === 0) return ''
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const span = max - min || 1
+  return values
+    .map((v, i) => {
+      const x = values.length === 1 ? width / 2 : (i / (values.length - 1)) * width
+      const y = height - 3 - ((v - min) / span) * (height - 6)
+      return `${x.toFixed(1)},${y.toFixed(1)}`
+    })
+    .join(' ')
+}
+
+// Essen 1:1 aus dem Prototyp, mit den Daten aus unserer App.
+export function EssenOverview() {
+  const today = dateKey()
+  const weekIndex = (new Date(`${today}T12:00:00`).getDay() + 6) % 7
+  const monday = addDays(today, -weekIndex)
+  const days = weekDays(today)
+
+  const [content] = useKv<RezepteFile | null>('content.rezepte', null)
+  const [mealsState, setMealsState] = useKv<MealsState>('meals', { persons: 2, skip: {}, weeks: {} })
+  const [nutri] = useKv<Record<string, NutriEntry[]>>('nutriLog', {})
+  const [goal] = useKv<number>('kcalGoal', 2000)
+  const [dayType, setDayType] = useKv<string>('dayType', 'training')
+  const [checked, setChecked] = useKv<Record<string, boolean>>('shoppingChecked', {})
+  const [measures] = useKv<{ log: { date: string; gewicht: number }[] }>('measures', { log: [] })
+
+  const persons = mealsState.persons ?? 2
+  const slotFor = (i: number) => mealsState.weeks[monday]?.[i] ?? defaultSlot(monday, i)
+  const todaySlot = slotFor(weekIndex)
+  const recipe = findRecipe(content?.rezepte ?? [], todaySlot)
+  const recipeTitle = recipe?.titel ?? (todaySlot.startsWith('custom:') ? todaySlot.slice(7) : 'Noch nichts geplant')
+
+  // Kalorien und Makros von heute
+  const entries = nutri[today] ?? []
+  const eaten = entries.reduce((s, e) => s + e.kcal, 0)
+  const protein = entries.reduce((s, e) => s + e.protein, 0)
+  const carbs = entries.reduce((s, e) => s + e.carbs, 0)
+  const fat = entries.reduce((s, e) => s + e.fat, 0)
+  const target = dayType === 'rest' ? goal - REST_DAY_MINUS : goal
+
+  // Wochen-Werte für Diagramme
+  const weekProtein = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.protein, 0))
+  const weekKcal = days.map((d) => (nutri[d] ?? []).reduce((s, e) => s + e.kcal, 0))
+  const recentWeights = [...(measures.log ?? [])].slice(-7)
+  const latest = recentWeights[recentWeights.length - 1]?.gewicht
+  const first = recentWeights[0]?.gewicht
+  const avgKcal = weekKcal.filter(Boolean).length
+    ? Math.round(weekKcal.filter(Boolean).reduce((s, v) => s + v, 0) / weekKcal.filter(Boolean).length)
+    : 0
+
+  // Einkaufsliste der Woche aus den Rezepten
+  const groups = new Map<string, { name: string; einheit: string; menge: number; kategorie: string }[]>()
+  for (let i = 0; i < 7; i++) {
+    const r = findRecipe(content?.rezepte ?? [], slotFor(i))
+    if (!r) continue
+    for (const z of r.zutaten_fuer_3) {
+      const list = groups.get(z.kategorie) ?? []
+      const existing = list.find((x) => x.name === z.name && x.einheit === z.einheit)
+      if (existing) existing.menge += scaleAmount(z, persons)
+      else list.push({ name: z.name, einheit: z.einheit, menge: scaleAmount(z, persons), kategorie: z.kategorie })
+      groups.set(z.kategorie, list)
+    }
+  }
+  const shopKey = (name: string, einheit: string) => `${monday}|${name}|${einheit}`
+  let shopOpen = 0
+  const shop = [...groups.entries()].map(([cat, items]) => ({
+    name: cat,
+    items: items.map((it) => {
+      const done = !!checked[shopKey(it.name, it.einheit)]
+      if (!done) shopOpen++
+      return {
+        name: `${it.name} · ${Math.round(it.menge * 10) / 10} ${it.einheit}`,
+        box: done ? '#8fa35a' : 'transparent',
+        mark: done ? '✓' : '',
+        color: done ? '#8d7459' : '#4a3828',
+        deco: done ? 'line-through' : 'none',
+        toggle: `shop:${shopKey(it.name, it.einheit)}`,
+      }
+    }),
+  }))
+
+  const ctx = {
+    rotationText: `Rotation Woche ${rotationWeek(monday)} von 4`,
+    recipeTitle,
+    recipeTag: 'Heute · Plan',
+    recipeInfo: recipe
+      ? `Für ${persons} Personen · ${recipe.zutaten_fuer_3.length} Zutaten · ${recipe.schritte.length} Schritte`
+      : 'Noch kein Rezept für heute',
+    persons,
+    lessP: 'persons:-1',
+    moreP: 'persons:+1',
+    ingredients: recipe
+      ? recipe.zutaten_fuer_3.map((z) => ({ name: z.name, amount: `${scaleAmount(z, persons)} ${z.einheit}` }))
+      : [],
+    dayTypes: [
+      { name: 'Training', pick: 'daytype:training', bg: dayType === 'training' ? '#8fa35a' : 'transparent', ink: dayType === 'training' ? '#fffaf0' : '#4a3828' },
+      { name: 'Ruhetag', pick: 'daytype:rest', bg: dayType === 'rest' ? '#8fa35a' : 'transparent', ink: dayType === 'rest' ? '#fffaf0' : '#4a3828' },
+    ],
+    kcalEaten: eaten,
+    kcalLeft: target - eaten,
+    kcalTarget: target,
+    macroHint: `Noch ${Math.max(0, TARGET_PROTEIN - Math.round(protein))} g Protein bis zum Ziel.`,
+    macros: [
+      { name: 'Protein', val: `${Math.round(protein)} / ${TARGET_PROTEIN} g`, pct: `${Math.round((protein / TARGET_PROTEIN) * 100)}%`, h: `${Math.min(100, (protein / TARGET_PROTEIN) * 100)}%`, bg: '#8fa35a', ink: '#fffaf0' },
+      { name: 'Kohlenhydrate', val: `${Math.round(carbs)} / ${TARGET_CARBS} g`, pct: `${Math.round((carbs / TARGET_CARBS) * 100)}%`, h: `${Math.min(100, (carbs / TARGET_CARBS) * 100)}%`, bg: '#e8b04a', ink: '#3d2a12' },
+      { name: 'Fett', val: `${Math.round(fat)} / ${TARGET_FAT} g`, pct: `${Math.round((fat / TARGET_FAT) * 100)}%`, h: `${Math.min(100, (fat / TARGET_FAT) * 100)}%`, bg: '#c9764a', ink: '#fffaf0' },
+    ],
+    mealsDone: `${entries.length} erfasst`,
+    meals: entries.map((e) => ({
+      name: e.name,
+      slot: `${e.grams} g`,
+      p: Math.round(e.protein),
+      kcal: e.kcal,
+      mark: '✓',
+      checkBg: '#8fa35a',
+      bg: '#fffaf0',
+      toggle: 'noop',
+    })),
+    progress: [
+      {
+        name: 'Gewicht',
+        val: latest !== undefined ? `${latest} kg` : '–',
+        delta: latest !== undefined && first !== undefined && recentWeights.length > 1 ? `${(latest - first) > 0 ? '+' : ''}${Math.round((latest - first) * 10) / 10} kg` : '',
+        points: line(recentWeights.map((m) => m.gewicht)),
+        bg: '#fffaf0',
+        ink: '#5d6b3d',
+      },
+      {
+        name: 'Kalorien Ø 7 Tage',
+        val: avgKcal ? `${avgKcal} kcal` : '–',
+        delta: '',
+        points: line(weekKcal),
+        bg: '#fffaf0',
+        ink: '#c4703f',
+      },
+    ],
+    protHit: `${weekProtein.filter((p) => p >= TARGET_PROTEIN).length} von 7 Tagen erreicht`,
+    protWeek: days.map((_d, i) => ({
+      d: dayLabel(i),
+      h: `${Math.min(100, (weekProtein[i] / TARGET_PROTEIN) * 100)}%`,
+      bg: weekProtein[i] >= TARGET_PROTEIN ? '#8fa35a' : '#e8d7b8',
+    })),
+    shop,
+    shopOpen: `${shopOpen} offen`,
+  }
+
+  function handleAct(action: string) {
+    if (action === 'daytype:training') void setDayType('training')
+    else if (action === 'daytype:rest') void setDayType('rest')
+    else if (action === 'persons:-1') void setMealsState({ ...mealsState, persons: Math.max(1, persons - 1) })
+    else if (action === 'persons:+1') void setMealsState({ ...mealsState, persons: Math.min(6, persons + 1) })
+    else if (action.startsWith('shop:')) {
+      const key = action.slice(5)
+      void setChecked({ ...checked, [key]: !checked[key] })
+    }
+  }
+
+  return <PrototypeScreen template={ESSEN} ctx={ctx} onAct={handleAct} />
+}
