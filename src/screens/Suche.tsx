@@ -73,7 +73,7 @@ export function Suche() {
       setError(null)
       searchFood(query)
         .then(setOnlineHits)
-        .catch(() => setError('Die Online-Suche ist gerade nicht erreichbar. Eigene Lebensmittel funktionieren trotzdem.'))
+        .catch(() => setError('Online gerade nicht erreichbar'))
         .finally(() => {
           setBusy(false)
           setSearched(true)
@@ -256,7 +256,7 @@ export function Suche() {
           </div>
         )}
         {busy && <p className="muted">Suche…</p>}
-        {error && <p className="error">{error}</p>}
+        {error && <p className="muted" style={{ fontSize: 12, margin: 0 }}>{error}</p>}
 
         {scanning && (
           <div className="scan-box">
