@@ -36,7 +36,7 @@ function removeMealsCard(html: string): string {
 const SPLIT = ESSEN.lastIndexOf('<div', ESSEN.indexOf('Mahlzeiten heute'))
 const CONTAINER_OPEN = ESSEN.slice(0, ESSEN.indexOf('>') + 1)
 const PART_TOP = ESSEN.slice(0, SPLIT) + '</div>'
-const PART_BOTTOM = removeMealsCard(CONTAINER_OPEN + ESSEN.slice(SPLIT))
+const PART_BOTTOM = removeMealsCard(ESSEN.slice(SPLIT)).replace(/<\/div>\s*$/, '')
 
 // Ziele für Makros. Der Prototyp hat keine Werte, diese sind Startwerte und lassen sich im Code ändern.
 const TARGET_PROTEIN = 140
@@ -228,7 +228,7 @@ export function EssenOverview() {
       <PrototypeScreen template={PART_TOP} ctx={ctx} onAct={handleAct} />
       <Suche />
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
-      <PrototypeScreen template={PART_BOTTOM} ctx={ctx} onAct={handleAct} />
+      <PrototypeScreen template={PART_BOTTOM} ctx={ctx} onAct={handleAct} style={{ display: 'flex', flexDirection: 'column', gap: 18 }} />
     </>
   )
 }
