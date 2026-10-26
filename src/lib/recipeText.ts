@@ -14,10 +14,6 @@ export interface ParsedRecipe {
   portionen: number
   zutaten: { name: string; menge: number; einheit: string; kategorie: string }[]
   schritte: string[]
-  kcal?: number
-  protein?: number
-  carbs?: number
-  fat?: number
 }
 
 const UNITS = ['g', 'kg', 'ml', 'l', 'el', 'tl', 'stück', 'stk', 'paket', 'dose', 'zehe', 'zehen', 'bund', 'becher', 'scheibe', 'scheiben', 'prise']
@@ -67,27 +63,6 @@ function parseIngredient(line: string): { name: string; menge: number; einheit: 
   return { name, menge, einheit, kategorie: categoryOf(name) }
 }
 
-function parseNutrition(line: string): Partial<Pick<ParsedRecipe, 'kcal' | 'protein' | 'carbs' | 'fat'>> {
-  const out: Partial<Pick<ParsedRecipe, 'kcal' | 'protein' | 'carbs' | 'fat'>> = {}
-  const grab = (re: RegExp) => {
-    const m = line.match(re)
-    const v = m ? (m[1] ?? m[2]) : undefined
-    return v ? parseNumber(v) : undefined
-  }
-  out.kcal = grab(/kcal[^\d]*(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?)\s*kcal/i) ?? undefined
-  out.protein = grab(/protein[^\d]*(\d+(?:[.,]\d+)?)/i)
-  out.carbs = grab(/(?:kohlenhydrate|kh)[^\d]*(\d+(?:[.,]\d+)?)/i)
-  out.fat = grab(/fett[^\d]*(\d+(?:[.,]\d+)?)/i)
-  return out
-}
-
-// Nur gefundene Werte übernehmen, vorhandene nicht überschreiben
-function mergeDefined(target: ParsedRecipe, values: Partial<ParsedRecipe>): void {
-  for (const [k, v] of Object.entries(values)) {
-    if (v !== undefined) (target as unknown as Record<string, unknown>)[k] = v
-  }
-}
-
 export function parseRecipeText(text: string): ParsedRecipe[] {
   // Unsichtbare Zeichen aus dem Kopieren (Zero-Width, geschütztes Leerzeichen) entfernen
   const cleaned = text.normalize('NFC').replace(/[​-‍﻿]/g, '').replace(/ /g, ' ')
@@ -129,7 +104,6 @@ export function parseRecipeText(text: string): ParsedRecipe[] {
     if (headingNut) {
       // Nährwerte nach den Zutaten gehören zum selben Rezept, nur ein neuer Abschnitt startet ein neues
       if (!current || (current.zutaten.length > 0 && section !== 'zutaten')) current = startRecipe()
-      mergeDefined(current as ParsedRecipe, parseNutrition(line))
       section = 'naehr'
       continue
     }
@@ -144,9 +118,8 @@ export function parseRecipeText(text: string): ParsedRecipe[] {
     }
     if (!current) continue
 
-    if (section === 'naehr') {
-      mergeDefined(current, parseNutrition(line))
-    } else if (section === 'zutaten') {
+    // Nährwerte-Zeilen werden übersprungen, die App erfasst keine Kalorien
+    if (section === 'zutaten') {
       const ing = parseIngredient(line)
       if (ing) {
         current.zutaten.push(ing)

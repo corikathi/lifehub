@@ -26,17 +26,13 @@ async function importData(data: Record<string, unknown>): Promise<string> {
     await writeKv('content.rezepte', data)
     return 'Rezepte'
   }
-  // Eigene Rezepte als Datei: { "eigeneRezepte": [ { titel, portionen, zutaten: [{name, menge, einheit, kategorie}], schritte, kcal, protein, carbs, fat } ] }
+  // Eigene Rezepte als Datei: { "eigeneRezepte": [ { titel, portionen, zutaten: [{name, menge, einheit, kategorie}], schritte } ] }
   if (Array.isArray(data.eigeneRezepte)) {
     type Eingang = {
       titel: string
       portionen?: number
       zutaten: { name: string; menge: number; einheit?: string; kategorie?: string }[]
       schritte?: string[]
-      kcal?: number
-      protein?: number
-      carbs?: number
-      fat?: number
     }
     const eingang = data.eigeneRezepte as Eingang[]
     const current = await readKv<Rezept[]>('myRecipes', [])
@@ -57,11 +53,6 @@ async function importData(data: Record<string, unknown>): Promise<string> {
       }
     })
     await writeKv('myRecipes', [...current, ...neu])
-    const nutri = await readKv<Record<string, { kcal: number; protein: number; carbs: number; fat: number }>>('recipeNutrition', {})
-    eingang.forEach((r, i) => {
-      if (r.kcal && r.kcal > 0) nutri[neu[i].id] = { kcal: r.kcal, protein: r.protein ?? 0, carbs: r.carbs ?? 0, fat: r.fat ?? 0 }
-    })
-    await writeKv('recipeNutrition', nutri)
     return 'Eigene Rezepte (' + neu.length + ')'
   }
   if (data.einheiten && data.rad) {

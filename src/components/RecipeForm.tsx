@@ -22,8 +22,6 @@ export function RecipeForm() {
   const [persons, setPersons] = useState('2')
   const [rows, setRows] = useState<Row[]>([{ ...EMPTY_ROW }])
   const [steps, setSteps] = useState('')
-  const [nutri, setNutri] = useKv<Record<string, { kcal: number; protein: number; carbs: number; fat: number }>>('recipeNutrition', {})
-  const [manual, setManual] = useState({ kcal: '', protein: '', carbs: '', fat: '' })
   const [editingId, setEditingId] = useState<string | null>(null)
 
   function updateRow(i: number, patch: Partial<Row>) {
@@ -51,11 +49,6 @@ export function RecipeForm() {
     if (editingId) rezept.id = editingId
     await setMine(editingId ? mine.map((x) => (x.id === editingId ? rezept : x)) : [...mine, rezept])
     setEditingId(null)
-    const num = (v: string) => Number(v.replace(',', '.')) || 0
-    if (num(manual.kcal) > 0) {
-      await setNutri({ ...nutri, [rezept.id]: { kcal: num(manual.kcal), protein: num(manual.protein), carbs: num(manual.carbs), fat: num(manual.fat) } })
-    }
-    setManual({ kcal: '', protein: '', carbs: '', fat: '' })
     setTitle('')
     setPersons('2')
     setRows([{ ...EMPTY_ROW }])
@@ -66,8 +59,6 @@ export function RecipeForm() {
   // Gespeicherte Werte zurück ins Formular holen (Basis sind 3 Personen wie gespeichert)
   function startEdit(rezept: Rezept) {
     setEditingId(rezept.id)
-    const n = nutri[rezept.id]
-    setManual(n ? { kcal: String(n.kcal), protein: String(n.protein), carbs: String(n.carbs), fat: String(n.fat) } : { kcal: '', protein: '', carbs: '', fat: '' })
     setTitle(rezept.titel)
     setPersons('3')
     setRows(rezept.zutaten_fuer_3.map((z) => ({ name: z.name, menge: String(z.menge), einheit: z.einheit, kategorie: z.kategorie })))
@@ -127,14 +118,6 @@ export function RecipeForm() {
         </div>
       ))}
       <button type="button" className="btn ghost small" onClick={() => setRows([...rows, { ...EMPTY_ROW }])}>+ Zutat</button>
-
-      <div className="section-title" style={{ margin: 0 }}>Nährwerte pro Portion (optional)</div>
-      <div className="manual-grid">
-        <input className="input" inputMode="decimal" placeholder="kcal" value={manual.kcal} onChange={(e) => setManual({ ...manual, kcal: e.target.value })} aria-label="kcal" />
-        <input className="input" inputMode="decimal" placeholder="Protein g" value={manual.protein} onChange={(e) => setManual({ ...manual, protein: e.target.value })} aria-label="Protein" />
-        <input className="input" inputMode="decimal" placeholder="KH g" value={manual.carbs} onChange={(e) => setManual({ ...manual, carbs: e.target.value })} aria-label="Kohlenhydrate" />
-        <input className="input" inputMode="decimal" placeholder="Fett g" value={manual.fat} onChange={(e) => setManual({ ...manual, fat: e.target.value })} aria-label="Fett" />
-      </div>
 
       <textarea className="textarea" placeholder="Zubereitung, eine Zeile pro Schritt (optional)" value={steps} onChange={(e) => setSteps(e.target.value)} />
 
