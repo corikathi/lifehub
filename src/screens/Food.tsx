@@ -22,6 +22,18 @@ interface MealsState {
 }
 
 
+// Auswahl-Eintrag: eigene und importierte Rezepte sind mit "neu" (letzte 14 Tage) oder "eigenes" markiert
+function recipeLabel(r: { id: string; titel: string }): string {
+  const stamp = r.id.startsWith('import-')
+    ? Number(r.id.split('-')[1])
+    : r.id.startsWith('own-')
+      ? Number(r.id.slice(4))
+      : NaN
+  if (Number.isNaN(stamp)) return r.titel
+  const days = (Date.now() - stamp) / 86400000
+  return days < 14 ? `${r.titel} · neu` : `${r.titel} · eigenes`
+}
+
 // Eigene Gerichte werden als "custom:Text" gespeichert
 function titleOf(slot: string, recipeTitle?: string): string {
   if (recipeTitle) return recipeTitle
@@ -200,7 +212,7 @@ export function Food() {
                         <select className="select" value={recipe ? slot : ''} onChange={(e) => e.target.value && setSlot(i, e.target.value)}>
                           <option value="" disabled>Anderes Rezept wählen…</option>
                           {content.rezepte.map((r) => (
-                            <option key={r.id} value={r.id}>{r.titel}</option>
+                            <option key={r.id} value={r.id}>{recipeLabel(r)}</option>
                           ))}
                         </select>
                         <CustomMeal onSave={(text) => setSlot(i, `custom:${text}`)} />
