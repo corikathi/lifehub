@@ -57,8 +57,6 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   const [mealsState] = useKv<{ weeks: Record<string, string[]> }>('meals', { weeks: {} })
   const [mochiName, setMochiName] = useKv<string>('mochiName', 'Mochi')
   const content = useRecipes()
-  const habits = useLiveQuery(() => db.habits.toArray(), [], [])
-  const logs = useLiveQuery(() => db.habitLogs.toArray(), [], [])
   const events = useLiveQuery(() => db.events.where('date').equals(today).sortBy('time'), [today], [])
 
   // Ab heute gezählt, wenn noch kein Startdatum gesetzt ist
@@ -142,7 +140,6 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   ]
   const dueTodos = todos.filter((td) => !td.date || td.date <= today)
 
-  const doneCount = habits.filter((h) => h.id !== undefined && logs.some((l) => l.habitId === h.id && l.date === today)).length
 
   // Mochi: eine Zeile, die sich am Fortschritt orientiert, ohne Vorwurf
   const mochiMessages = [
@@ -158,12 +155,6 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   async function toggleSupplement(name: string) {
     const list = doneToday.includes(name) ? doneToday.filter((s) => s !== name) : [...doneToday, name]
     await setSuppDone({ ...suppDone, [today]: list })
-  }
-
-  async function toggleHabit(habitId: number) {
-    const log = logs.find((l) => l.habitId === habitId && l.date === today)
-    if (log?.id !== undefined) await db.habitLogs.delete(log.id)
-    else await db.habitLogs.add({ habitId, date: today })
   }
 
   async function addWater(ml: number) {
@@ -472,23 +463,6 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
           {taskList.length === 0 && dueTodos.length === 0 && <p style={{ margin: 0, color: T.muted }}>Heute steht nichts an.</p>}
         </div>
       </div>
-
-      {habits.length > 0 && (
-        <div style={card}>
-          <p style={label}>Gewohnheiten · {doneCount}/{habits.length}</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
-            {habits.map((h) => {
-              const done = h.id !== undefined && logs.some((l) => l.habitId === h.id && l.date === today)
-              return (
-                <button key={h.id} type="button" onClick={() => h.id !== undefined && void toggleHabit(h.id)} style={{ display: 'flex', justifyContent: 'space-between', textAlign: 'left', background: 'transparent', border: `1px solid ${T.line}`, padding: '10px 12px', color: T.text, fontWeight: 800, cursor: 'pointer' }}>
-                  <span>{h.name}</span>
-                  <span style={{ color: T.accent }}>{done ? '✓' : ''}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
 
       <button type="button" onClick={onOpenSos} style={{ ...ghostBtn, width: '100%', padding: '14px', color: T.warn, borderColor: T.warn }}>Ruhe-Ecke öffnen</button>
     </section>

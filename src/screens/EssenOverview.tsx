@@ -6,6 +6,7 @@ import { ESSEN } from '../prototype/essen'
 import { WATER } from '../prototype/water'
 import { PrototypeScreen } from '../components/PrototypeScreen'
 import { WeightEntry } from '../components/WeightEntry'
+import { Entwicklung } from '../components/Entwicklung'
 
 interface MealsState {
   persons: number
@@ -109,6 +110,7 @@ export function EssenOverview({ part }: { part: 'heute' | 'trend' }) {
     <>
       <PrototypeScreen template={WATER} ctx={waterCtx} onAct={handleWater} />
       <WeightEntry />
+      <Entwicklung />
     </>
   )
 }

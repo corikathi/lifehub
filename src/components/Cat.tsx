@@ -65,6 +65,15 @@ export function Cat({ x, y, happy }: { x: number; y: number; happy: boolean }) {
           strokeWidth="1.3"
         />
 
+        {/* Streifen auf der Stirn und rosa Wangen, damit sie freundlicher wirkt */}
+        <g stroke={LINE} strokeWidth="1.2" strokeLinecap="round" opacity="0.55" fill="none">
+          <path d="M-3 -17 L-2.2 -13" />
+          <path d="M0 -18 L0 -13.5" />
+          <path d="M3 -17 L2.2 -13" />
+        </g>
+        <ellipse cx="-11" cy="3" rx="3" ry="2" fill={NOSE} opacity="0.55" />
+        <ellipse cx="11" cy="3" rx="3" ry="2" fill={NOSE} opacity="0.55" />
+
         {/* Augen: rund, tief gesetzt */}
         {happy ? (
           <>
