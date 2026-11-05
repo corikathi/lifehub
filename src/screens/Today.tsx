@@ -465,6 +465,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
       </div>
 
       <button type="button" onClick={onOpenSos} style={{ ...ghostBtn, width: '100%', padding: '14px', color: T.warn, borderColor: T.warn }}>Ruhe-Ecke öffnen</button>
+      <button type="button" onClick={() => onNavigate('more')} style={{ ...ghostBtn, width: '100%', padding: '14px' }}>Mehr: Import, Export, Sync</button>
     </section>
   )
 }
