@@ -22,12 +22,12 @@ const REACTIONS = ['Miau!', 'Schnurr… das tut gut.', 'Schön, dass du da bist.
 
 // Farben der Startseite: warm und ruhig, mit einem olivgrünen Akzent
 const T = {
-  bg: '#f4ead8',
-  card: '#fffaf0',
-  line: '#ecdcc0',
-  text: '#4a3828',
-  muted: '#8d7459',
-  accent: '#8fa35a',
+  bg: '#f6eee3',
+  card: '#fffdf8',
+  line: '#ecdcc8',
+  text: '#3f2e20',
+  muted: '#8a6f58',
+  accent: '#e8793a',
   warn: '#c4703f',
 }
 
@@ -92,6 +92,16 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   // Supplements heute
   const doneToday = suppDone[today] ?? []
   const suppCount = supplements.filter((s) => doneToday.includes(s)).length
+  // Wie viele Tage in Folge ein Supplement genommen wurde. Ist heute noch offen, zählt die Serie bis gestern.
+  const streakOfSupp = (name: string) => {
+    let n = 0
+    let d = doneToday.includes(name) ? today : addDays(today, -1)
+    while ((suppDone[d] ?? []).includes(name)) {
+      n++
+      d = addDays(d, -1)
+    }
+    return n
+  }
 
   // Training in dieser Woche: jeder Tag mit einer Einheit zählt einmal
   const weekDates = new Set<string>()
@@ -348,12 +358,15 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
             {suppCount}/{supplements.length}
           </span>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
           {supplements.map((s) => {
             const done = doneToday.includes(s)
+            const streak = streakOfSupp(s)
             return (
-              <button key={s} type="button" onClick={() => void toggleSupplement(s)} style={pill(done)}>
-                {done ? '✓ ' : ''}{s}
+              <button key={s} type="button" onClick={() => void toggleSupplement(s)} style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', background: done ? '#fbe5d3' : 'transparent', border: `1px solid ${T.line}`, borderRadius: 14, padding: '10px 12px', color: T.text, cursor: 'pointer' }}>
+                <span style={{ width: 24, height: 24, borderRadius: 99, border: `2px solid ${T.accent}`, background: done ? T.accent : 'transparent', color: '#fffdf8', display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: 13, flex: 'none' }}>{done ? '✓' : ''}</span>
+                <span style={{ flex: 1, fontWeight: 800 }}>{s}</span>
+                <span style={{ fontSize: 12, color: T.muted }}>{streak > 0 ? `${streak} Tage in Folge` : 'Heute starten'}</span>
               </button>
             )
           })}
