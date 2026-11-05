@@ -111,6 +111,11 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
   for (const r of rides.log) if (inWeek(r.date)) weekDates.add(r.date)
   const trainedThisWeek = weekDates.size
 
+  // Wochenringe: an wie vielen Tagen dieser Woche (bis heute) alle Supplements und genug Wasser
+  const weekSoFar = Array.from({ length: weekIndex + 1 }, (_, i) => addDays(monday, i))
+  const suppWeekDays = weekSoFar.filter((d) => supplements.every((s) => (suppDone[d] ?? []).includes(s))).length
+  const waterWeekDays = weekSoFar.filter((d) => (drinks[d] ?? []).reduce((s, x) => s + x.ml, 0) >= 2000).length
+
   // Gewicht zum Ziel
   const latestWeight = measures.log.length ? measures.log[measures.log.length - 1].gewicht : undefined
 
@@ -245,7 +250,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     <section style={{ background: T.bg, margin: '-16px', padding: '16px 16px 24px', minHeight: '100%', display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div>
         <p style={{ margin: 0, fontSize: 12, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: T.muted }}>{formatDay(today)}</p>
-        <h1 style={{ margin: '2px 0 0', fontWeight: 900, fontSize: 40, letterSpacing: -1, textTransform: 'uppercase', color: T.text }}>Heute</h1>
+        <h1 style={{ margin: '2px 0 0', fontWeight: 900, fontSize: 24, letterSpacing: -0.5, textTransform: 'uppercase', color: T.text }}>Heute</h1>
       </div>
 
       {/* Warum und Ziel am Ball */}
@@ -282,6 +287,16 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
           <p style={label}>Heute</p>
           <p style={{ margin: '4px 0 0', fontSize: 15, fontWeight: 700, color: T.text }}>{ringDone} von {ringTotal} erledigt</p>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: T.muted }}>Supplements, Training, Wasser und eine Mahlzeit.</p>
+        </div>
+      </div>
+
+      {/* Diese Woche in Kreisen */}
+      <div style={card}>
+        <p style={label}>Diese Woche</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
+          <Ring value={trainedThisWeek} total={trainingTarget} label="Training" />
+          <Ring value={suppWeekDays} total={weekIndex + 1} label="Supplements" />
+          <Ring value={waterWeekDays} total={weekIndex + 1} label="Wasser" />
         </div>
       </div>
 
@@ -381,10 +396,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
             {trainedThisWeek}/{trainingTarget}
           </span>
         </div>
-        <div style={bar}>
-          <span style={barFill(Math.min(100, (trainedThisWeek / trainingTarget) * 100), T.accent)} />
-        </div>
-        <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 700, color: T.text }}>Heute: {todayTraining}</p>
+        <p style={{ margin: '4px 0 0', fontSize: 15, fontWeight: 700, color: T.text }}>Heute: {todayTraining}</p>
         <button type="button" style={{ ...ghostBtn, marginTop: 10 }} onClick={() => onNavigate('training')}>Zum Training</button>
       </div>
 
@@ -480,5 +492,21 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
 
       <button type="button" onClick={onOpenSos} style={{ ...ghostBtn, width: '100%', padding: '14px', color: T.warn, borderColor: T.warn }}>Ruhe-Ecke öffnen</button>
     </section>
+  )
+}
+
+// Ring mit Anzahl in der Mitte, z. B. 2/4
+function Ring({ value, total, label }: { value: number; total: number; label: string }) {
+  const pct = total > 0 ? Math.min(1, value / total) : 0
+  const circ = 2 * Math.PI * 28
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
+        <circle cx="36" cy="36" r="28" stroke={T.line} strokeWidth="7" fill="none" />
+        <circle cx="36" cy="36" r="28" stroke={T.accent} strokeWidth="7" fill="none" strokeLinecap="round" strokeDasharray={`${pct * circ} ${circ}`} transform="rotate(-90 36 36)" />
+        <text x="36" y="42" textAnchor="middle" fontSize="16" fontWeight="800" fill={T.text}>{value}/{total}</text>
+      </svg>
+      <span style={{ fontSize: 12, fontWeight: 800, color: T.muted }}>{label}</span>
+    </div>
   )
 }
