@@ -228,8 +228,8 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     setTimeout(() => setReacting(false), 2500)
   }
 
-  const card: React.CSSProperties = { background: T.card, border: `1px solid ${T.line}`, borderRadius: 4, padding: 16 }
-  const label: React.CSSProperties = { margin: 0, fontSize: 12, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: T.muted }
+  const card: React.CSSProperties = { background: T.card, borderRadius: 28, padding: 18, boxShadow: '0 8px 24px rgba(94,60,25,.08)' }
+  const label: React.CSSProperties = { margin: 0, fontSize: 13, fontWeight: 700, color: T.muted }
   const big: React.CSSProperties = { margin: '4px 0 0', fontWeight: 900, fontSize: 24, lineHeight: 1, color: T.text, letterSpacing: -0.5 }
   const bar: React.CSSProperties = { height: 6, background: T.line, marginTop: 10, position: 'relative', overflow: 'hidden' }
   const barFill = (pct: number, color: string): React.CSSProperties => ({ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: color })
@@ -244,7 +244,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
     letterSpacing: 0.5,
     cursor: 'pointer',
   })
-  const ghostBtn: React.CSSProperties = { border: `1.5px solid ${T.line}`, background: 'transparent', color: T.text, padding: '8px 12px', fontWeight: 800, fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, cursor: 'pointer' }
+  const ghostBtn: React.CSSProperties = { border: 'none', borderRadius: 99, background: '#f3e7d6', color: T.text, padding: '8px 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
 
   return (
     <section style={{ background: T.bg, margin: '-16px', padding: '16px 16px 24px', minHeight: '100%', display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -253,8 +253,23 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
         <h1 style={{ margin: '2px 0 0', fontWeight: 900, fontSize: 24, letterSpacing: -0.5, textTransform: 'uppercase', color: T.text }}>Heute</h1>
       </div>
 
+      {/* Mochi */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+        <button type="button" onClick={touchMochi} aria-label="Mochi antippen" style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}>
+          <svg viewBox="-42 -34 84 64" className={reacting ? 'mochi-cat mochi-react' : 'mochi-cat'} style={{ width: 92, height: 'auto', display: 'block' }} aria-hidden="true">
+            <Cat x={0} y={0} happy={reacting} />
+          </svg>
+        </button>
+        <div style={{ flex: 1, minWidth: 0, background: T.card, border: `1px solid ${T.line}`, padding: '12px 14px' }}>
+          <button type="button" onClick={() => { const n = window.prompt('Wie soll deine Katze heißen?', mochiName)?.trim(); if (n) void setMochiName(n) }} style={{ border: 'none', background: 'transparent', padding: 0, fontSize: 11, fontWeight: 900, letterSpacing: 1.5, color: T.accent, textTransform: 'uppercase', cursor: 'pointer' }}>
+            {mochiName}
+          </button>
+          <p style={{ margin: '4px 0 0', fontSize: 15, fontWeight: 700, lineHeight: 1.4, color: T.text }}>{mochiText}</p>
+        </div>
+      </div>
+
       {/* Warum und Ziel am Ball */}
-      <div style={{ ...card, borderLeft: `4px solid ${T.accent}` }}>
+      <div style={card}>
         <p style={label}>Mein Warum</p>
         <input
           style={{ marginTop: 4, width: '100%', background: 'transparent', border: 'none', borderBottom: `1px solid ${T.line}`, padding: '2px 0', fontWeight: 700, fontSize: 14, color: T.text, outline: 'none' }}
@@ -280,7 +295,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
       <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 16 }}>
         <svg width="88" height="88" viewBox="0 0 88 88" aria-hidden="true">
           <circle cx="44" cy="44" r="36" stroke={T.line} strokeWidth="8" fill="none" />
-          <circle cx="44" cy="44" r="36" stroke={T.accent} strokeWidth="8" fill="none" strokeLinecap="round" strokeDasharray={`${ringPct * ringCirc} ${ringCirc}`} transform="rotate(-90 44 44)" />
+          <circle cx="44" cy="44" r="36" stroke={T.accent} strokeWidth="8" fill="none" strokeLinecap="round" strokeDasharray={`${ringPct * ringCirc} ${ringCirc}`} transform="rotate(-90 44 44)" style={{ transition: "stroke-dasharray .6s ease" }} />
           <text x="44" y="50" textAnchor="middle" fontSize="18" fontWeight="800" fill={T.text}>{Math.round(ringPct * 100)}%</text>
         </svg>
         <div>
@@ -475,21 +490,6 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
         </div>
       )}
 
-      {/* Mochi */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-        <button type="button" onClick={touchMochi} aria-label="Mochi antippen" style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}>
-          <svg viewBox="-42 -34 84 64" className={reacting ? 'mochi-cat mochi-react' : 'mochi-cat'} style={{ width: 92, height: 'auto', display: 'block' }} aria-hidden="true">
-            <Cat x={0} y={0} happy={reacting} />
-          </svg>
-        </button>
-        <div style={{ flex: 1, minWidth: 0, background: T.card, border: `1px solid ${T.line}`, padding: '12px 14px' }}>
-          <button type="button" onClick={() => { const n = window.prompt('Wie soll deine Katze heißen?', mochiName)?.trim(); if (n) void setMochiName(n) }} style={{ border: 'none', background: 'transparent', padding: 0, fontSize: 11, fontWeight: 900, letterSpacing: 1.5, color: T.accent, textTransform: 'uppercase', cursor: 'pointer' }}>
-            {mochiName}
-          </button>
-          <p style={{ margin: '4px 0 0', fontSize: 15, fontWeight: 700, lineHeight: 1.4, color: T.text }}>{mochiText}</p>
-        </div>
-      </div>
-
       <button type="button" onClick={onOpenSos} style={{ ...ghostBtn, width: '100%', padding: '14px', color: T.warn, borderColor: T.warn }}>Ruhe-Ecke öffnen</button>
     </section>
   )
@@ -503,7 +503,7 @@ function Ring({ value, total, label }: { value: number; total: number; label: st
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
       <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
         <circle cx="36" cy="36" r="28" stroke={T.line} strokeWidth="7" fill="none" />
-        <circle cx="36" cy="36" r="28" stroke={T.accent} strokeWidth="7" fill="none" strokeLinecap="round" strokeDasharray={`${pct * circ} ${circ}`} transform="rotate(-90 36 36)" />
+        <circle cx="36" cy="36" r="28" stroke={T.accent} strokeWidth="7" fill="none" strokeLinecap="round" strokeDasharray={`${pct * circ} ${circ}`} transform="rotate(-90 36 36)" style={{ transition: "stroke-dasharray .6s ease" }} />
         <text x="36" y="42" textAnchor="middle" fontSize="16" fontWeight="800" fill={T.text}>{value}/{total}</text>
       </svg>
       <span style={{ fontSize: 12, fontWeight: 800, color: T.muted }}>{label}</span>
