@@ -230,7 +230,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
 
   const card: React.CSSProperties = { background: T.card, border: `1px solid ${T.line}`, borderRadius: 4, padding: 16 }
   const label: React.CSSProperties = { margin: 0, fontSize: 12, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: T.muted }
-  const big: React.CSSProperties = { margin: '4px 0 0', fontWeight: 900, fontSize: 34, lineHeight: 1, color: T.text, letterSpacing: -0.5 }
+  const big: React.CSSProperties = { margin: '4px 0 0', fontWeight: 900, fontSize: 24, lineHeight: 1, color: T.text, letterSpacing: -0.5 }
   const bar: React.CSSProperties = { height: 6, background: T.line, marginTop: 10, position: 'relative', overflow: 'hidden' }
   const barFill = (pct: number, color: string): React.CSSProperties => ({ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, background: color })
   const pill = (on: boolean): React.CSSProperties => ({
@@ -257,7 +257,7 @@ export function Today({ onNavigate, onOpenSos }: { onNavigate: (tab: Tab) => voi
       <div style={{ ...card, borderLeft: `4px solid ${T.accent}` }}>
         <p style={label}>Mein Warum</p>
         <input
-          style={{ marginTop: 6, width: '100%', background: 'transparent', border: 'none', borderBottom: `1px solid ${T.line}`, padding: '4px 0', fontWeight: 800, fontSize: 17, color: T.text, outline: 'none' }}
+          style={{ marginTop: 4, width: '100%', background: 'transparent', border: 'none', borderBottom: `1px solid ${T.line}`, padding: '2px 0', fontWeight: 700, fontSize: 14, color: T.text, outline: 'none' }}
           value={warum}
           onChange={(e) => void setWarum(e.target.value)}
           aria-label="Mein Warum"
