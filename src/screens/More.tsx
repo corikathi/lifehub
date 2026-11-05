@@ -73,6 +73,82 @@ async function importFile(file: File): Promise<string> {
   return importData(JSON.parse(await file.text()) as Record<string, unknown>)
 }
 
+// Alles für den Export: Trainingsplan mit letzten Gewichten, Rezepte, Körpermaße und Verlauf
+interface SetRowExport {
+  w: number
+  r: number
+}
+interface LoggedExercises {
+  date: string
+  exercises?: Record<string, SetRowExport[]>
+  sets?: Record<string, SetRowExport[]>
+}
+
+async function buildExport(): Promise<Record<string, unknown>> {
+  const training = await readKv<{
+    wochenplan_standard: string[]
+    einheiten: Record<string, { tag: string; dauer: string; uebungen: { name: string; saetze: string; tipp: string }[] }>
+  } | null>('content.training', null)
+  const rezepte = await readKv<{ rezepte: { titel: string; hinweis?: string; zutaten_fuer_3: unknown[]; schritte: string[] }[] } | null>('content.rezepte', null)
+  const mine = await readKv<{ titel: string; hinweis?: string; zutaten_fuer_3: unknown[]; schritte: string[] }[]>('myRecipes', [])
+  const measures = await readKv<{ log: { date: string; gewicht: number }[] }>('measures', { log: [] })
+  const guided = await readKv<LoggedExercises[]>('guidedWorkouts', [])
+  const workouts = await readKv<LoggedExercises[]>('workoutLog', [])
+  const rides = await readKv<{ log: unknown[] }>('rides', { log: [] })
+
+  // Letztes Ergebnis je Übung: der jüngste Eintrag, der die Übung enthält
+  const logged = [...guided, ...workouts].sort((a, b) => a.date.localeCompare(b.date))
+  const lastOf = (name: string) => {
+    for (let i = logged.length - 1; i >= 0; i--) {
+      const sets = logged[i].exercises?.[name] ?? logged[i].sets?.[name]
+      if (sets?.length) return { datum: logged[i].date, saetze: sets }
+    }
+    return undefined
+  }
+
+  const einheiten = Object.fromEntries(
+    Object.entries(training?.einheiten ?? {}).map(([name, e]) => [
+      name,
+      {
+        tag: e.tag,
+        dauer: e.dauer,
+        uebungen: e.uebungen.map((u) => ({ name: u.name, saetze: u.saetze, tipp: u.tipp, letzteGewichte: lastOf(u.name) ?? null })),
+      },
+    ]),
+  )
+
+  return {
+    exportiertAm: new Date().toISOString(),
+    trainingsplan: {
+      wochenplan: training?.wochenplan_standard ?? [],
+      einheiten,
+    },
+    rezepte: [
+      ...(rezepte?.rezepte ?? []).map((r) => ({ titel: r.titel, hinweis: r.hinweis ?? '', zutaten: r.zutaten_fuer_3, schritte: r.schritte, quelle: 'Standard' })),
+      ...mine.map((r) => ({ titel: r.titel, hinweis: r.hinweis ?? '', zutaten: r.zutaten_fuer_3, schritte: r.schritte, quelle: 'eigenes' })),
+    ],
+    fitness: {
+      koerpermasse: measures.log,
+      einheitenVerlauf: guided.map((g) => ({ datum: g.date, uebungen: g.exercises ?? {} })),
+      trainingsVerlauf: workouts.map((w) => ({ datum: w.date, uebungen: w.sets ?? {} })),
+      rad: rides.log,
+    },
+  }
+}
+
+async function downloadExport(): Promise<void> {
+  const data = await buildExport()
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'lifehub-export.json'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
 export function More({ email }: { email?: string }) {
   const [status, setStatus] = useState<SyncStatus>('idle')
   const [busy, setBusy] = useState(false)
@@ -175,6 +251,16 @@ export function More({ email }: { email?: string }) {
         </label>
         {busy && <p className="muted" style={{ marginTop: 8 }}>Importiere…</p>}
         {message && <p className="info" style={{ marginTop: 8 }}>{message}</p>}
+      </div>
+
+      <div className="card">
+        <p className="section-title" style={{ margin: '0 0 6px' }}>Exportieren</p>
+        <p className="muted">
+          Lädt eine Datei lifehub-export.json mit Trainingsplan, letzten Gewichten, Rezepten und deinen Körpermaßen.
+        </p>
+        <button type="button" className="btn primary" style={{ marginTop: 8 }} disabled={busy} onClick={() => void downloadExport()}>
+          Export herunterladen
+        </button>
       </div>
 
       <div className="card">
